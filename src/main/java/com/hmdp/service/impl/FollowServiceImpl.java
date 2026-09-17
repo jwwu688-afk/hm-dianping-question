@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
  * 服务实现类
  * </p>
  *
- * @author 虎哥
- * @since 2021-12-22
+ * @author jarvis
+ * @since 2026-09-16
  */
 @Service
 public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> implements IFollowService {

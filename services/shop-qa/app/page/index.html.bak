@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="XqF2suoCaU9NBh9x2apM7W">
+<head data-page-node-id="SPrEOGf4JTUFDRTLJs1BeA">
+  <meta charset="UTF-8" data-page-node-id="d0UV3R5ZlDkjz03DVdteg4" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" data-page-node-id="DSDAFLtcHyMyDYCTQbNmIs" />
+  <title>小度小度 · 知识库工作台</title>
+  <style>
+    :root{
+      --bg:#f4f6fb;
+      --panel:#ffffff;
+      --text:#1c2333;
+      --muted:#8a93a8;
+      --brand:#5b6cf0;
+      --brand2:#22b8d8;
+      --grad:linear-gradient(135deg,#5b6cf0 0%,#22b8d8 100%);
+      --grad-soft:linear-gradient(135deg,rgba(91,108,240,.12),rgba(34,184,216,.12));
+      --border:#e7eaf3;
+      --ok:#10b981;
+      --err:#ef4444;
+      --shadow-lg:0 20px 50px rgba(28,35,51,.14);
+      --shadow-sm:0 4px 16px rgba(28,35,51,.07);
+    }
+    *{box-sizing:border-box}
+    ::-webkit-scrollbar{width:8px;height:8px}
+    ::-webkit-scrollbar-thumb{background:#d4d9e6;border-radius:8px}
+    ::-webkit-scrollbar-thumb:hover{background:#b9c0d4}
+    ::-webkit-scrollbar-track{background:transparent}
+
+    body{
+      margin:0;
+      font-family:"Segoe UI","Microsoft YaHei",system-ui,-apple-system,Arial,sans-serif;
+      color:var(--text);
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:16px;
+      background:
+        radial-gradient(900px 480px at 12% -5%, rgba(91,108,240,.16), transparent 60%),
+        radial-gradient(900px 480px at 95% 8%, rgba(34,184,216,.14), transparent 55%),
+        radial-gradient(700px 420px at 55% 110%, rgba(145,110,250,.10), transparent 60%),
+        var(--bg);
+    }
+
+    /* ========== 整体外壳 ========== */
+    .app{
+      width:100%;
+      max-width:1080px;
+      height:min(860px,94vh);
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:20px;
+      box-shadow:var(--shadow-lg);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* ========== 顶栏 ========== */
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      padding:14px 20px;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(90deg,rgba(91,108,240,.07),rgba(34,184,216,.07));
+      flex:0 0 auto;
+    }
+    .brand{display:flex;align-items:center;gap:12px;min-width:210px}
+    .logo{
+      width:42px;height:42px;border-radius:13px;
+      background:var(--grad);
+      box-shadow:0 10px 22px rgba(91,108,240,.35);
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;color:#fff;
+      flex:0 0 auto;
+    }
+    .title{display:flex;flex-direction:column;line-height:1.15}
+    .title strong{font-size:15px;letter-spacing:.5px}
+    .title span{font-size:12px;color:var(--muted);margin-top:3px}
+
+    /* 分段式标签切换 */
+    .tabs{
+      margin:0 auto;
+      position:relative;
+      display:flex;
+      background:#eef1f8;
+      border-radius:14px;
+      padding:4px;
+      user-select:none;
+    }
+    .tabs .glider{
+      position:absolute;
+      top:4px;left:4px;
+      width:calc(50% - 4px);
+      height:calc(100% - 8px);
+      background:var(--panel);
+      border-radius:11px;
+      box-shadow:var(--shadow-sm);
+      transition:transform .32s cubic-bezier(.4,0,.2,1);
+      pointer-events:none;
+    }
+    .tabs button{
+      position:relative;z-index:1;
+      border:none;background:none;
+      font-size:13.5px;font-weight:600;
+      color:var(--muted);
+      padding:9px 26px;
+      border-radius:11px;
+      cursor:pointer;
+      transition:color .25s;
+      display:flex;align-items:center;gap:7px;
+      font-family:inherit;
+    }
+    .tabs button.active{color:var(--brand)}
+    .tabs button:hover:not(.active){color:#5a647c}
+
+    /* 右侧占位：与左侧 brand 宽度对称，保证中间标签栏水平居中 */
+    .conn-spacer{min-width:190px}
+
+    /* ========== 视图容器 ========== */
+    .views{flex:1;position:relative;overflow:hidden;display:flex}
+    .view{
+      display:none;
+      flex-direction:column;
+      flex:1;
+    }
+    .view.active{display:flex}
+
+    /* ========== 问答视图 ========== */
+    .chat{
+      flex:1;
+      overflow:auto;
+      padding:18px 16px 10px;
+      background:
+        linear-gradient(180deg,rgba(91,108,240,.04),transparent 40%),
+        linear-gradient(0deg,rgba(34,184,216,.04),transparent 45%);
+    }
+    .dayline{
+      text-align:center;color:var(--muted);font-size:12px;
+      margin:4px 0 14px;
+      display:flex;align-items:center;gap:12px;
+    }
+    .dayline::before,.dayline::after{content:"";flex:1;height:1px;background:var(--border)}
+
+    .msg{display:flex;gap:10px;margin:12px 0;align-items:flex-end;animation:msgIn .3s ease}
+    @keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .msg.user{justify-content:flex-end}
+    .msg > div:not(.avatar){flex:1;min-width:0}
+    .msg.user > div:not(.avatar){display:flex;flex-direction:column;align-items:flex-end}
+    .avatar{
+      width:36px;height:36px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:13px;font-weight:600;color:#fff;
+      flex:0 0 auto;
+    }
+    .avatar.me{background:linear-gradient(135deg,#f59e0b,#f76b8a);box-shadow:0 6px 14px rgba(245,158,11,.3)}
+    .avatar.bot{background:var(--grad);box-shadow:0 6px 14px rgba(91,108,240,.3);font-size:15px}
+    .bubble{
+      max-width:min(720px,78%);
+      display:inline-block;
+      border-radius:16px;
+      padding:11px 14px;
+      border:1px solid var(--border);
+      background:#fff;
+      line-height:1.6;
+      font-size:14px;
+      white-space:pre-wrap;
+      overflow-wrap:break-word;
+      box-shadow:var(--shadow-sm);
+    }
+    .msg.user .bubble{
+      background:var(--grad);
+      color:#fff;border-color:transparent;
+      border-bottom-right-radius:5px;
+      box-shadow:0 8px 20px rgba(91,108,240,.28);
+    }
+    .msg.bot .bubble{border-bottom-left-radius:5px}
+    .meta{font-size:11px;color:var(--muted);margin-top:6px;padding:0 4px}
+    .msg.user .meta{color:rgba(28,35,51,.45)}
+
+    details.progress{
+      margin-top:10px;
+      border:1px dashed rgba(138,147,168,.45);
+      border-radius:12px;
+      padding:8px 11px;
+      background:rgba(138,147,168,.05);
+    }
+    details.progress summary{cursor:pointer;user-select:none;color:var(--muted);font-size:12px;font-weight:600}
+    .progress ul{margin:8px 0 0 18px;padding:0}
+    .progress li{margin:4px 0;font-size:12px;color:#56657a;animation:msgIn .25s ease}
+
+    .answer-images{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+    .answer-images img{
+      display:block;
+      max-width:min(100%,600px);max-height:600px;
+      width:auto;height:auto;
+      border-radius:12px;border:1px solid var(--border);
+      box-shadow:0 10px 24px rgba(28,35,51,.10);
+      background:#fff;
+    }
+    .answer-images a{font-size:12px;color:var(--muted);text-decoration:none;word-break:break-all}
+    .answer-images a:hover{color:var(--brand)}
+
+    .typing{display:inline-flex;gap:6px;align-items:center;padding:4px 0}
+    .typing .dot{
+      width:7px;height:7px;border-radius:50%;
+      background:#9aa6b2;
+      animation:bounce 1.2s infinite ease-in-out;
+    }
+    .typing .dot:nth-child(2){animation-delay:.15s}
+    .typing .dot:nth-child(3){animation-delay:.3s}
+    @keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.6}40%{transform:translateY(-5px);opacity:1}}
+
+    /* 欢迎卡片 */
+    .hero{
+      max-width:520px;margin:22px auto;
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:26px 26px 22px;
+      text-align:center;
+      box-shadow:var(--shadow-sm);
+    }
+    .hero .hero-icon{
+      width:58px;height:58px;margin:0 auto 14px;
+      border-radius:17px;background:var(--grad);
+      display:flex;align-items:center;justify-content:center;
+      font-size:27px;color:#fff;
+      box-shadow:0 12px 26px rgba(91,108,240,.35);
+    }
+    .hero h3{margin:0 0 8px;font-size:16px}
+    .hero p{margin:0 0 16px;font-size:13px;color:var(--muted);line-height:1.6}
+    .hero .sugs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+    .hero .sug{
+      border:1px solid var(--border);
+      background:#fafbff;color:#4a5470;
+      border-radius:999px;padding:7px 14px;
+      font-size:12.5px;cursor:pointer;
+      transition:all .2s;
+    }
+    .hero .sug:hover{
+      border-color:rgba(91,108,240,.5);
+      color:var(--brand);
+      background:rgba(91,108,240,.06);
+      transform:translateY(-1px);
+    }
+
+    /* 输入区 */
+    .composer{
+      border-top:1px solid var(--border);
+      padding:12px 16px 8px;
+      display:flex;gap:10px;align-items:flex-end;
+      background:#fff;
+    }
+    .composer textarea{
+      flex:1;resize:none;
+      min-height:46px;max-height:140px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1.5px solid var(--border);
+      outline:none;
+      font-size:14px;line-height:1.5;
+      font-family:inherit;
+      transition:border-color .2s,box-shadow .2s;
+      background:#fbfcff;
+    }
+    .composer textarea:focus{border-color:rgba(91,108,240,.55);box-shadow:0 0 0 4px rgba(91,108,240,.10);background:#fff}
+    .send{
+      min-width:96px;height:46px;
+      border:none;border-radius:14px;
+      cursor:pointer;font-size:14px;font-weight:600;
+      color:#fff;background:var(--grad);
+      box-shadow:0 8px 18px rgba(91,108,240,.30);
+      transition:transform .15s,box-shadow .15s,opacity .2s;
+      font-family:inherit;
+    }
+    .send:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 12px 24px rgba(91,108,240,.38)}
+    .send:disabled{opacity:.55;cursor:not-allowed}
+    .chat-foot{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 18px 12px;background:#fff;
+    }
+    .chat-foot .hint{color:var(--muted);font-size:12px}
+    .kbd{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+      border:1px solid var(--border);
+      padding:1px 6px;border-radius:6px;
+      background:#f7f9fc;color:#3b4a5a;font-size:11px;
+    }
+    .stream-toggle{
+      display:flex;align-items:center;gap:5px;cursor:pointer;
+      user-select:none;color:var(--muted);font-size:12px;
+    }
+    .stream-toggle input{accent-color:var(--brand);cursor:pointer}
+
+    /* ========== 导入视图 ========== */
+    .import-wrap{
+      flex:1;overflow:auto;
+      padding:22px 22px 16px;
+      background:
+        linear-gradient(180deg,rgba(34,184,216,.04),transparent 40%),
+        linear-gradient(0deg,rgba(91,108,240,.04),transparent 50%);
+    }
+    .import-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+    .import-head h3{margin:0;font-size:16px}
+    .import-head p{margin:4px 0 0;font-size:12.5px;color:var(--muted)}
+    .stat-chips{display:flex;gap:8px}
+    .stat{
+      background:#fff;border:1px solid var(--border);border-radius:12px;
+      padding:8px 14px;text-align:center;min-width:64px;
+      box-shadow:var(--shadow-sm);
+    }
+    .stat b{display:block;font-size:17px;color:var(--brand)}
+    .stat span{font-size:11px;color:var(--muted)}
+
+    .dropzone{
+      border:2px dashed #c6cdea;
+      border-radius:18px;
+      padding:38px 20px;
+      text-align:center;cursor:pointer;
+      transition:all .25s;
+      background:#fbfcff;
+      position:relative;
+      overflow:hidden;
+    }
+    .dropzone:hover{border-color:rgba(91,108,240,.55);background:rgba(91,108,240,.04)}
+    .dropzone.dragging{
+      border-color:var(--brand);
+      background:rgba(91,108,240,.08);
+      transform:scale(1.008);
+      box-shadow:0 0 0 5px rgba(91,108,240,.10);
+    }
+    .dropzone .dz-icon{
+      width:62px;height:62px;margin:0 auto 12px;
+      border-radius:18px;
+      background:var(--grad-soft);
+      display:flex;align-items:center;justify-content:center;
+      font-size:28px;
+    }
+    .dropzone .dz-main{font-size:14.5px;font-weight:600;color:#3d4763}
+    .dropzone .dz-sub{font-size:12px;color:var(--muted);margin-top:6px}
+    .dropzone .dz-types{display:flex;gap:8px;justify-content:center;margin-top:14px}
+    .dz-type{
+      font-size:11.5px;padding:4px 12px;border-radius:999px;
+      border:1px solid var(--border);background:#fff;color:#5a647c;
+    }
+
+    .file-list{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+    .file-item{
+      background:#fff;border:1px solid var(--border);
+      border-radius:16px;padding:14px 16px;
+      display:flex;gap:14px;align-items:center;
+      box-shadow:var(--shadow-sm);
+      animation:msgIn .3s ease;
+    }
+    .f-icon{
+      width:44px;height:44px;border-radius:13px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:19px;color:#fff;flex:0 0 auto;
+    }
+    .f-icon.pdf{background:linear-gradient(135deg,#f87171,#ef4444);box-shadow:0 6px 14px rgba(239,68,68,.25)}
+    .f-icon.md{background:linear-gradient(135deg,#38bdf8,#0284c7);box-shadow:0 6px 14px rgba(2,132,199,.25)}
+    .f-icon.unk{background:linear-gradient(135deg,#a5b4fc,#6366f1)}
+    .f-info{flex:1;min-width:0}
+    .f-name{font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .f-size{font-size:11.5px;color:var(--muted);margin-top:3px}
+    .bar-wrap{height:5px;border-radius:3px;background:#eef1f8;margin-top:9px;overflow:hidden;display:none}
+    .bar{height:100%;width:0%;border-radius:3px;background:var(--grad);transition:width .4s ease}
+    .bar.indeterminate{
+      width:40%!important;
+      animation:slide 1.2s ease-in-out infinite;
+    }
+    @keyframes slide{0%{margin-left:-40%}100%{margin-left:100%}}
+    .log-details{margin-top:8px;font-size:12px;color:var(--muted)}
+    .log-details summary{cursor:pointer;user-select:none;color:#6c7a89;font-weight:600}
+    .log-list{margin:6px 0 0 16px;padding:0}
+    .log-list li{margin:2px 0;line-height:1.5}
+
+    .badge{
+      padding:6px 13px;border-radius:999px;
+      font-size:12px;font-weight:600;color:#fff;
+      min-width:76px;text-align:center;flex:0 0 auto;
+      display:flex;align-items:center;justify-content:center;gap:6px;
+    }
+    .badge.uploading{background:linear-gradient(135deg,#fbbf24,#f59e0b)}
+    .badge.processing{background:linear-gradient(135deg,#5b6cf0,#22b8d8)}
+    .badge.processing::before{
+      content:"";width:7px;height:7px;border-radius:50%;
+      background:rgba(255,255,255,.9);
+      animation:pulse2 1s infinite;
+    }
+    @keyframes pulse2{0%,100%{opacity:.4}50%{opacity:1}}
+    .badge.completed{background:linear-gradient(135deg,#34d399,#10b981)}
+    .badge.error{background:linear-gradient(135deg,#f87171,#ef4444)}
+
+    .empty-tip{
+      text-align:center;color:#aab3c5;font-size:13px;
+      padding:26px 0 10px;
+    }
+  </style>
+</head>
+<body data-page-node-id="dgvUIIGcH7BMjlAMOSxkZu">
+  <div class="app" data-page-node-id="1KGzhPrA1WtPZ4moDCBIXY">
+    <!-- ===================== 顶栏 ===================== -->
+    <div class="topbar" data-page-node-id="4Y838qMFP9eh6trPgFjxID">
+      <div class="brand" data-page-node-id="qzCy7jRwEDzM80uaw3HjFr">
+        <div class="logo" data-page-node-id="cfWDNP3sgkQNt6sR9TMBoH">度</div>
+        <div class="title" data-page-node-id="tw8e5MqFOhtxgEvBkQePQ5">
+          <strong data-page-node-id="ajfD0VQj6E3NtZuXcFfvIm">小度小度 · 知识库工作台</strong>
+          <span id="subTitle" data-page-node-id="UR2CetKu0IHDEsYx8r3j6F">私有知识检索 · 联网问答 · 一站式管理</span>
+        </div>
+      </div>
+
+      <nav class="tabs" id="tabs" data-page-node-id="MDYtsZPF6QdOwlyRTLScwK">
+        <span class="glider" id="glider" data-page-node-id="kLGjTobYq99cWeH4LcxmTW"></span>
+        <button data-view="chat" class="active" id="tabChat" onclick="switchView('chat')">💬 智能问答</button>
+        <button data-view="import" id="tabImport" onclick="switchView('import')">📚 知识库导入</button>
+      </nav>
+
+      <!-- 右侧占位：与左侧 brand 宽度对称，保证中间标签栏水平居中 -->
+      <div class="conn-spacer"></div>
+    </div>
+
+    <!-- ===================== 视图区 ===================== -->
+    <div class="views" data-page-node-id="kysv7u6sL5zHokMD9yOcC9">
+
+      <!-- ========== 视图一：智能问答 ========== -->
+      <section class="view active" id="view-chat" data-page-node-id="RKi0ZG21431slJGciMRwe0">
+        <div class="chat" id="chat" data-page-node-id="EoeodMitqEFxoKxaly3DBA">
+          <div class="dayline" data-page-node-id="8fjQfswUvKpyH1vSlDfHpe">今天</div>
+
+          <div class="hero" id="heroCard" data-page-node-id="1qBTrcqCJDjdY221JpCdn4">
+            <div class="hero-icon" data-page-node-id="usjHve3x0sHVOLWhGCOyH9">🧠</div>
+            <h3 data-page-node-id="HiW1Ml9C4QcBY6MJShGvxw">你好，我是小度小度</h3>
+            <p data-page-node-id="xFHzkddK2MhckLPwNQt6wN">我可以基于你的私有知识库回答产品相关问题，<br data-page-node-id="l9KUZBqBbriSCIWN8IXGYS">也会在需要时联网补充最新信息。</p>
+            <div class="sugs" data-page-node-id="Uzl4ls5oadyA7iezr98cRP">
+              <span class="sug" data-page-node-id="GafnRbNKChUFOGAQrAHb21">HAK 180 烫金机的安全注意事项有哪些？</span>
+              <span class="sug" data-page-node-id="ROxeLeLQN6X3sQQYRqhs0P">HAK 180 烫金机怎么保养？</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="composer" data-page-node-id="eQqYHiB5PSx4dlhqQNSxqv">
+          <textarea id="input" placeholder="请输入问题（Enter 发送，Shift+Enter 换行）"></textarea>
+          <button class="send" id="send" data-page-node-id="z3xg54HV5VsQuYrv0NJQUC">发 送</button>
+        </div>
+        <div class="chat-foot" data-page-node-id="UhJha2wgGB5ZAPspTLZzIz">
+          <span class="hint" data-page-node-id="VaHaU6JCK53MDjGmUCib9U">快捷键：<span class="kbd" data-page-node-id="1HYDq7JLdvaOSPAP9dItjD">Enter</span> 发送 · <span class="kbd" data-page-node-id="Lo6occza7enMZvpFiCw5Lz">Shift</span>+<span class="kbd" data-page-node-id="AgSsF59uGoBIXzGo6ePrqh">Enter</span> 换行</span>
+          <span style="display:flex;gap:14px;align-items:center" data-page-node-id="ZX7qRiGycadMNlIdbk4bfl">
+            <label class="stream-toggle" data-page-node-id="KrBvKT2udk8NauFWlH8r7x"><input type="checkbox" id="streamToggle" checked data-page-node-id="stvE1GDuMcj8y5uvIGCLvd"> 流式输出</label>
+            <button id="btnClear" style="border:none;background:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit" data-page-node-id="YNcQ0oJeB1lG0LMBHEaPpE">🗑 清空对话</button>
+          </span>
+        </div>
+      </section>
+
+      <!-- ========== 视图二：知识库导入 ========== -->
+      <section class="view" id="view-import" data-page-node-id="Xbiay7ZbNeNYEHSroEPiOX">
+        <div class="import-wrap" data-page-node-id="k2rNZuMxSBK4PUEXFsn3oU">
+          <div class="import-head" data-page-node-id="D7nT3O1qjZLrrkuRuzN3Fg">
+            <div data-page-node-id="6bntMLrkIWA0sVUgZYAlL5">
+              <h3 data-page-node-id="4ANWATJoY5kDoMy0Eor9Iy">知识库文件导入</h3>
+              <p data-page-node-id="57FghpIXEgqww6C60sCh1M">上传 PDF / Markdown 文档，系统将自动解析、切片、向量化并入库</p>
+            </div>
+            <div class="stat-chips" data-page-node-id="dcZBNQH0gg66DvaDBApH8e">
+              <div class="stat" data-page-node-id="ocRaixfg0w4qUXV7V2NWjw"><b id="statTotal" data-page-node-id="Co714OHyq3LGocgbwtAMJU">0</b><span data-page-node-id="TD1sHGKtPlzBEy3tqKilq8">总计</span></div>
+              <div class="stat" data-page-node-id="rZKs4DAm1wSGFoBfbZjCEM"><b id="statDone" data-page-node-id="Td9zoWhQumUPpEiFWRg0Vv">0</b><span data-page-node-id="t6cR5C8G0bFkAvtBQ1NJ5x">完成</span></div>
+              <div class="stat" data-page-node-id="aE4wL7TpJ3voAtk8N0SszW"><b id="statFail" data-page-node-id="qp4O8M8gNO9WCDoK9UjUd7">0</b><span data-page-node-id="8kAOgiTynq5JkbEWnCvEVP">失败</span></div>
+            </div>
+          </div>
+
+          <div class="dropzone" id="dropZone" data-page-node-id="Ynb6eHVOMM4VdZkQzv9mVe">
+            <div class="dz-icon" data-page-node-id="nzw7UyQxXzjev7ysC2rqyJ">☁️</div>
+            <div class="dz-main" data-page-node-id="abi42rWwqlM0D0pWcBsYyX">点击选择 或 拖拽文件到此处上传</div>
+            <div class="dz-sub" data-page-node-id="vmxkwc8JwpXlCp6r4hzfgt">支持批量上传，导入完成后即可在「智能问答」中检索</div>
+            <div class="dz-types" data-page-node-id="YHRA8tyokt80U58CHIx7KM">
+              <span class="dz-type" data-page-node-id="QvG7cUjGQw6bUHNmZpaAnk">📄 PDF 文档</span>
+              <span class="dz-type" data-page-node-id="T39F5EXaqtmy64cROMEIho">📝 Markdown</span>
+            </div>
+            <input type="file" id="fileInput" style="display:none" multiple accept=".pdf,.md" data-page-node-id="b9BQsmBtYoqLigy8FUJSbk">
+          </div>
+
+          <div class="file-list" id="fileList" data-page-node-id="PDbRzLeMCghwHNjHQtQ6wm">
+            <div class="empty-tip" id="emptyTip" data-page-node-id="laugZaJmtaY1K3ZBTjgruL">暂无导入任务 · 上传文件开始构建你的知识库</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    /* ================================================================
+     * 全局配置
+     * ================================================================ */
+    // 问答服务：页面由 total_service(8000) 提供，与问答服务不同源，故显式指向 8001
+    const API_BASE = 'http://127.0.0.1:8001';
+    // 导入服务：独立端口
+    const IMPORT_API_BASE = 'http://127.0.0.1:8002';
+
+    /* ================================================================
+     * 标签切换
+     * ================================================================ */
+    const tabs = document.getElementById('tabs');
+    const glider = document.getElementById('glider');
+    const views = { chat: document.getElementById('view-chat'), import: document.getElementById('view-import') };
+
+    function switchView(name){
+      tabs.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+      Object.entries(views).forEach(([k, el]) => el.classList.toggle('active', k === name));
+      glider.style.transform = name === 'import' ? 'translateX(100%)' : 'translateX(0)';
+    }
+    tabs.querySelectorAll('button').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
+
+    /* ================================================================
+     * 问答视图逻辑（继承自原 chat.html）
+     * ================================================================ */
+    const chatEl = document.getElementById('chat');
+    const inputEl = document.getElementById('input');
+    const sendBtn = document.getElementById('send');
+    const btnClear = document.getElementById('btnClear');
+    const streamToggle = document.getElementById('streamToggle');
+    const heroCard = document.getElementById('heroCard');
+
+    let sessionId = localStorage.getItem('kb_session_id');
+    if (!sessionId) {
+      sessionId = 'sess-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem('kb_session_id', sessionId);
+    }
+
+    function scrollToBottom(){ chatEl.scrollTop = chatEl.scrollHeight; }
+    function nowTime(){ return new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'}); }
+    function formatTime(ts){
+      if(!ts) return nowTime();
+      const d = new Date(Number(ts) * 1000);
+      if(Number.isNaN(d.getTime())) return nowTime();
+      return d.toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
+    }
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+        .replaceAll('"','&quot;').replaceAll("'",'&#039;');
+    }
+    function hideHero(){ if(heroCard) heroCard.style.display = 'none'; }
+
+    function isImageUrl(url){
+      try {
+        const u = new URL(url);
+        return /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(u.pathname);
+      } catch (e) {
+        return /\.(png|jpe?g|gif|webp|bmp|svg)(\?|#|$)/i.test(url || '');
+      }
+    }
+    function normalizeUrl(rawUrl){
+      const s = String(rawUrl || '').trim();
+      if(!s) return '';
+      return s.replace(/\s/g, '%20');
+    }
+    function dedupeKeepOrder(arr){
+      const seen = new Set(); const out = [];
+      for(const x of (Array.isArray(arr) ? arr : [])){
+        const v = String(x || '');
+        if(!v || seen.has(v)) continue;
+        seen.add(v); out.push(v);
+      }
+      return out;
+    }
+    function extractUrlsLoose(text){
+      const s = String(text || '');
+      const regex = /(https?:\/\/[^\s]+)/g;
+      const matches = s.match(regex) || [];
+      const trimTailPunct = (u) => String(u || '').replace(/[)\]}'">，。,;；\]】）＞]+$/g, '');
+      const trimHeadPunct = (u) => String(u || '').replace(/^[<([{'"]+|^[＜（【\[]+/g, '');
+      return dedupeKeepOrder(matches.map(m => trimHeadPunct(trimTailPunct(m))).filter(Boolean));
+    }
+    function findLastImageMarkerIndex(raw){
+      const re = /【\s*图片\s*】|\[\s*图片\s*\]/g;
+      let m, lastIdx = -1, lastLen = 0;
+      while((m = re.exec(String(raw || ''))) !== null){ lastIdx = m.index; lastLen = m[0].length; }
+      return { idx: lastIdx, len: lastLen };
+    }
+    function parseAnswerAndImages(text){
+      const raw = String(text || '');
+      const { idx, len } = findLastImageMarkerIndex(raw);
+      if(idx === -1) return { text: raw, images: [] };
+      const before = raw.slice(0, idx).trimEnd();
+      const after = raw.slice(idx + len).trim();
+      const urls = [];
+      for(const line of after.split(/\r?\n/).map(l => l.trim()).filter(Boolean)){
+        if(line.startsWith('http://') || line.startsWith('https://')) urls.push(line);
+        else extractUrlsLoose(line).forEach(u => urls.push(u));
+      }
+      const seen = new Set(); const images = [];
+      for(const u of urls){
+        const n = normalizeUrl(u);
+        if(!isImageUrl(n) || seen.has(n)) continue;
+        seen.add(n); images.push(n);
+      }
+      return { text: before, images };
+    }
+    function renderAnswerWithImages(containerEl, answerText, candidateImageUrls){
+      const { text, images: imagesFromBlock } = parseAnswerAndImages(answerText);
+      const candidates = Array.isArray(candidateImageUrls) ? candidateImageUrls.map(normalizeUrl).filter(isImageUrl) : [];
+      const looseImages = extractUrlsLoose(answerText).map(normalizeUrl).filter(isImageUrl);
+      const allImages = Array.from(new Set([...(imagesFromBlock||[]), ...candidates, ...looseImages]));
+
+      containerEl.textContent = '';
+      const textEl = document.createElement('div');
+      textEl.className = 'answer-text';
+      textEl.textContent = (text || '').trim().length > 0 ? text : '（已完成，但未返回答案）';
+      containerEl.appendChild(textEl);
+
+      if(allImages.length > 0){
+        const imgWrap = document.createElement('div');
+        imgWrap.className = 'answer-images';
+        for(const url of allImages){
+          const safeUrl = normalizeUrl(url);
+          const img = document.createElement('img');
+          img.loading = 'lazy'; img.src = safeUrl; img.alt = '参考图片'; img.referrerPolicy = 'no-referrer';
+          img.addEventListener('error', () => { img.style.display = 'none'; });
+          imgWrap.appendChild(img);
+          const link = document.createElement('a');
+          link.href = safeUrl; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = url;
+          imgWrap.appendChild(link);
+        }
+        containerEl.appendChild(imgWrap);
+      }
+    }
+
+    function addUserMsg(text){
+      hideHero();
+      chatEl.insertAdjacentHTML('beforeend', `
+        <div class="msg user">
+          <div>
+            <div class="bubble">${escapeHtml(text)}</div>
+            <div class="meta">${nowTime()}</div>
+          </div>
+          <div class="avatar me">我</div>
+        </div>`);
+      scrollToBottom();
+    }
+    function addUserMsgWithTime(text, ts){
+      hideHero();
+      chatEl.insertAdjacentHTML('beforeend', `
+        <div class="msg user">
+          <div>
+            <div class="bubble">${escapeHtml(text)}</div>
+            <div class="meta">${formatTime(ts)}</div>
+          </div>
+          <div class="avatar me">我</div>
+        </div>`);
+      scrollToBottom();
+    }
+    function addBotMsgWithTime(text, ts, imageUrls){
+      hideHero();
+      const id = 'bot-his-' + Math.random().toString(36).slice(2);
+      chatEl.insertAdjacentHTML('beforeend', `
+        <div class="msg bot" id="${id}">
+          <div class="avatar bot">度</div>
+          <div>
+            <div class="bubble"><div class="answer"></div></div>
+            <div class="meta">${formatTime(ts)}</div>
+          </div>
+        </div>`);
+      const el = document.getElementById(id);
+      if(el) renderAnswerWithImages(el.querySelector('.answer'), text || '', imageUrls || []);
+      scrollToBottom();
+    }
+    function addBotMsgSkeleton(){
+      hideHero();
+      const id = 'bot-' + Math.random().toString(36).slice(2);
+      chatEl.insertAdjacentHTML('beforeend', `
+        <div class="msg bot" id="${id}">
+          <div class="avatar bot">度</div>
+          <div style="min-width:180px">
+            <div class="bubble">
+              <span class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+              <details class="progress" open>
+                <summary>阶段进度（等待中）</summary>
+                <ul></ul>
+              </details>
+            </div>
+            <div class="meta">${nowTime()}</div>
+          </div>
+        </div>`);
+      scrollToBottom();
+      return document.getElementById(id);
+    }
+
+    function renderProgress(botMsgEl, doneList, runningList, status){
+      const details = botMsgEl.querySelector('details.progress');
+      if(!details) return;
+      const summary = details.querySelector('summary');
+      const ul = details.querySelector('ul');
+      const done = Array.isArray(doneList) ? doneList : [];
+      const running = Array.isArray(runningList) ? runningList : [];
+      const statusMap = {'processing':'处理中','completed':'已完成','failed':'失败','pending':'等待中'};
+      summary.textContent = `阶段进度（已完成${done.length}，进行中${running.length}，状态：${statusMap[status] || status || 'unknown'}）`;
+      const lines = [...done.map(x => `✅ ${x}`), ...running.map(x => `⏳ ${x}`)];
+      ul.innerHTML = '';
+      if(lines.length === 0) ul.insertAdjacentHTML('beforeend', '<li>暂无进度</li>');
+      else lines.forEach(line => ul.insertAdjacentHTML('beforeend', `<li>${escapeHtml(line)}</li>`));
+    }
+
+    function finalizeBotAnswer(botMsgEl, answer, error, imageUrls){
+      const bubble = botMsgEl.querySelector('.bubble');
+      const progress = botMsgEl.querySelector('details.progress');
+      const err = (error || '').trim();
+
+      if(progress){ progress.remove(); progress.removeAttribute('open'); }
+      bubble.textContent = '';
+      const el = document.createElement('div');
+      el.className = 'answer';
+      if(err){
+        el.textContent = `抱歉，本次处理失败：\n${err}`;
+        bubble.appendChild(el);
+        if(progress) bubble.appendChild(progress);
+        return;
+      }
+      bubble.appendChild(el);
+      renderAnswerWithImages(el, answer || '', imageUrls || []);
+      if(progress) bubble.appendChild(progress);
+    }
+
+    async function loadHistory(){
+      try{
+        const res = await fetch(`${API_BASE}/history/${sessionId}`);
+        if(!res.ok) return;
+        const data = await res.json();
+        const items = Array.isArray(data.items) ? data.items : [];
+        if(items.length === 0) return;
+        hideHero();
+        const nodes = Array.from(chatEl.querySelectorAll('.msg'));
+        for(let i=1;i<nodes.length;i++) nodes[i].remove();
+        for(const item of items){
+          if(item.role === 'user') addUserMsgWithTime(item.text || '', item.ts);
+          else addBotMsgWithTime(item.text || '', item.ts, item.image_urls || []);
+        }
+        scrollToBottom();
+      }catch(_){}
+    }
+
+    async function submitQuery(text){
+      const res = await fetch(`${API_BASE}/query`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ query: text, session_id: sessionId, is_stream: streamToggle.checked })
+      });
+      if(!res.ok) throw new Error((await res.text()) || '请求失败');
+      return await res.json();
+    }
+
+    async function poll(taskId, botMsgEl){
+      const typing = botMsgEl.querySelector('.typing');
+      const interval = setInterval(async () => {
+        try{
+          const res = await fetch(`${API_BASE}/status/${taskId}`);
+          const data = await res.json();
+          renderProgress(botMsgEl, data.done_list, data.running_list, data.status);
+          if(data.status === 'completed' || data.status === 'failed'){
+            if(typing) typing.remove();
+            finalizeBotAnswer(botMsgEl, data.answer, data.error, data.image_urls || []);
+            clearInterval(interval);
+            sendBtn.disabled = false;
+          }
+        }catch(e){ /* 轮询错误不立刻终止 */ }
+      }, 1200);
+    }
+
+    async function onSend(){
+      const text = (inputEl.value || '').trim();
+      if(!text) return;
+      inputEl.value = '';
+      addUserMsg(text);
+      const botMsgEl = addBotMsgSkeleton();
+      sendBtn.disabled = true;
+
+      try{
+        const isStream = streamToggle.checked;
+        const data = await submitQuery(text);
+        renderProgress(botMsgEl, [], [], 'pending');
+
+        if (!isStream) {
+          renderProgress(botMsgEl, data.done_list || [], [], 'completed');
+          finalizeBotAnswer(botMsgEl, data.answer, data.error, data.image_urls || []);
+          sendBtn.disabled = false;
+          return;
+        }
+
+        // 流式：SSE
+        const { session_id } = data;
+        const bubble = botMsgEl.querySelector('.bubble');
+        let answerEl = bubble.querySelector('.answer');
+        if(!answerEl){
+          answerEl = document.createElement('div');
+          answerEl.className = 'answer';
+          bubble.insertBefore(answerEl, bubble.firstChild);
+        }
+        const es = new EventSource(`${API_BASE}/stream/${session_id}`);
+        let rawAnswerText = '';
+
+        es.addEventListener('progress', (e) => {
+          try{
+            const d = JSON.parse(e.data || '{}');
+            renderProgress(botMsgEl, d.done_list, d.running_list, d.status);
+            if(d && d.status === 'completed'){
+              const typing = botMsgEl.querySelector('.typing');
+              if(typing) typing.remove();
+              sendBtn.disabled = false;
+            }
+          }catch(_){}
+        });
+        es.addEventListener('delta', (e) => {
+          try{
+            const d = JSON.parse(e.data || '{}');
+            const delta = d.delta || '';
+            if(delta){
+              rawAnswerText += delta;
+              renderAnswerWithImages(answerEl, rawAnswerText, []);
+              scrollToBottom();
+            }
+          }catch(_){}
+        });
+        const finishHandler = (e) => {
+          const typing = botMsgEl.querySelector('.typing');
+          if(typing) typing.remove();
+          const progress = botMsgEl.querySelector('details.progress');
+          if(progress) progress.removeAttribute('open');
+          try{
+            const d = JSON.parse(e.data || '{}');
+            const finalText = (d && typeof d.answer === 'string' && d.answer.trim().length > 0) ? d.answer : (rawAnswerText || answerEl.textContent || '');
+            renderAnswerWithImages(answerEl, finalText, d.image_urls || []);
+          }catch(_){}
+          es.close();
+          sendBtn.disabled = false;
+        };
+        es.addEventListener('final', finishHandler);
+        es.addEventListener('final_answer', finishHandler);
+        es.addEventListener('error', (e) => {
+          const typing = botMsgEl.querySelector('.typing');
+          if(typing) typing.remove();
+          const progress = botMsgEl.querySelector('details.progress');
+          if(progress) progress.removeAttribute('open');
+          try{
+            const msg = e && e.data ? (JSON.parse(e.data).error || 'SSE 连接中断/失败') : 'SSE 连接中断/失败';
+            rawAnswerText += `\n\n（错误：${msg}）`;
+          }catch(_){
+            rawAnswerText += `\n\n（错误：SSE 连接中断/失败）`;
+          }
+          renderAnswerWithImages(answerEl, rawAnswerText, []);
+          es.close();
+          sendBtn.disabled = false;
+        });
+      }catch(e){
+        const bubble = botMsgEl.querySelector('.bubble');
+        const progress = botMsgEl.querySelector('details.progress');
+        const typing = botMsgEl.querySelector('.typing');
+        if(typing) typing.remove();
+        bubble.innerHTML = `请求失败：${escapeHtml(e.message || e)}\n\n` + (progress ? progress.outerHTML : '');
+        sendBtn.disabled = false;
+      }
+    }
+
+    sendBtn.addEventListener('click', onSend);
+    inputEl.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); onSend(); }
+    });
+    btnClear.addEventListener('click', async () => {
+      if(!confirm('确定要清空当前会话的历史记录吗？这将无法恢复。')) return;
+      try {
+        const res = await fetch(`${API_BASE}/history/${sessionId}`, { method: 'DELETE' });
+        if(!res.ok) alert('服务端清空失败，仅清空本地显示');
+      } catch(e) { alert('服务端清空失败，仅清空本地显示'); }
+      const nodes = Array.from(chatEl.querySelectorAll('.msg'));
+      for(let i=1;i<nodes.length;i++) nodes[i].remove();
+      if(heroCard) heroCard.style.display = '';
+      scrollToBottom();
+    });
+
+    // 欢迎卡片上的建议问题：点击直接填入并发送
+    document.querySelectorAll('.hero .sug').forEach(sug => {
+      sug.addEventListener('click', () => {
+        inputEl.value = sug.textContent;
+        onSend();
+      });
+    });
+
+    loadHistory();
+    setTimeout(() => inputEl.focus(), 200);
+
+    /* ================================================================
+     * 导入视图逻辑（继承自原 import.html，API 指向 8002）
+     * ================================================================ */
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const emptyTip = document.getElementById('emptyTip');
+    const statTotal = document.getElementById('statTotal');
+    const statDone = document.getElementById('statDone');
+    const statFail = document.getElementById('statFail');
+    let stat = { total:0, done:0, fail:0 };
+
+    function refreshStats(){
+      statTotal.textContent = stat.total;
+      statDone.textContent = stat.done;
+      statFail.textContent = stat.fail;
+    }
+
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragging'); });
+    dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragging'); });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragging');
+      handleFiles(e.dataTransfer.files);
+    });
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => { handleFiles(e.target.files); e.target.value = ''; });
+
+    function handleFiles(files){
+      if(emptyTip) emptyTip.style.display = 'none';
+      Array.from(files).forEach(uploadFile);
+    }
+
+    function fileIcon(name){
+      if(/\.pdf$/i.test(name)) return 'pdf';
+      if(/\.md$/i.test(name)) return 'md';
+      return 'unk';
+    }
+    function fmtSize(bytes){
+      if(bytes >= 1048576) return (bytes/1048576).toFixed(2) + ' MB';
+      return (bytes/1024).toFixed(2) + ' KB';
+    }
+
+    function normalizeDoneLog(text){
+      if (typeof text !== 'string') return String(text);
+      return text.endsWith('已完成') ? text : `${text}已完成`;
+    }
+    function normalizeRunningLog(text){
+      if (typeof text !== 'string') return String(text);
+      if (text.startsWith('正在进行')) return text.endsWith('...') ? text : `${text}...`;
+      return `正在进行${text}...`;
+    }
+
+    async function uploadFile(file){
+      stat.total++; refreshStats();
+      const id = 'file-' + Math.random().toString(36).slice(2, 9);
+      const icon = fileIcon(file.name);
+      fileList.insertAdjacentHTML('afterbegin', `
+        <div class="file-item" id="${id}">
+          <div class="f-icon ${icon}">${icon === 'pdf' ? '📄' : icon === 'md' ? '📝' : '📁'}</div>
+          <div class="f-info">
+            <span class="f-name">${escapeHtml(file.name)}</span>
+            <span class="f-size">${fmtSize(file.size)}</span>
+            <div class="bar-wrap"><div class="bar"></div></div>
+            <details class="log-details">
+              <summary>日志（点击展开）</summary>
+              <ul class="log-list"></ul>
+            </details>
+          </div>
+          <div class="badge uploading">上传中</div>
+        </div>`);
+
+      const itemEl = document.getElementById(id);
+      const badge = itemEl.querySelector('.badge');
+      const bar = itemEl.querySelector('.bar');
+      const barWrap = itemEl.querySelector('.bar-wrap');
+
+      const formData = new FormData();
+      formData.append('files', file);
+
+      try{
+        barWrap.style.display = 'block';
+        bar.classList.add('indeterminate');
+
+        const response = await fetch(`${IMPORT_API_BASE}/upload`, { method: 'POST', body: formData });
+        if(!response.ok) throw new Error('Upload failed');
+
+        const result = await response.json();
+        const taskId = result.task_ids[0];
+
+        bar.classList.remove('indeterminate');
+        bar.style.width = '30%';
+        badge.textContent = '处理中';
+        badge.className = 'badge processing';
+
+        pollStatus(taskId, itemEl);
+      }catch(error){
+        console.error(error);
+        bar.classList.remove('indeterminate');
+        bar.style.width = '100%';
+        bar.style.background = 'linear-gradient(135deg,#f87171,#ef4444)';
+        badge.textContent = '失败';
+        badge.className = 'badge error';
+        stat.fail++; refreshStats();
+      }
+    }
+
+    function renderLogs(itemEl, doneList, runningList){
+      const logSummary = itemEl.querySelector('.log-details summary');
+      const logListEl = itemEl.querySelector('.log-list');
+      const logDetails = itemEl.querySelector('.log-details');
+      const done = Array.isArray(doneList) ? doneList : [];
+      const running = Array.isArray(runningList) ? runningList : [];
+
+      logSummary.textContent = `日志（已完成${done.length}，进行中${running.length}，点击展开）`;
+      logListEl.innerHTML = '';
+      const lines = [...done.map(normalizeDoneLog), ...running.map(normalizeRunningLog)];
+      if(lines.length === 0){
+        logListEl.appendChild(Object.assign(document.createElement('li'), {textContent:'暂无日志'}));
+      }else{
+        for(const line of lines){
+          const li = document.createElement('li');
+          li.textContent = line;
+          logListEl.appendChild(li);
+        }
+      }
+      if(lines.length === 0) logDetails.open = false;
+    }
+
+    function pollStatus(taskId, itemEl){
+      const badge = itemEl.querySelector('.badge');
+      const bar = itemEl.querySelector('.bar');
+      const interval = setInterval(async () => {
+        try{
+          const res = await fetch(`${IMPORT_API_BASE}/status/${taskId}`);
+          const data = await res.json();
+          renderLogs(itemEl, data.done_list, data.running_list);
+
+          if(data.status === 'completed'){
+            badge.textContent = '已完成';
+            badge.className = 'badge completed';
+            bar.style.width = '100%';
+            clearInterval(interval);
+            stat.done++; refreshStats();
+          }else if(data.status === 'processing'){
+            badge.textContent = '处理中';
+            badge.className = 'badge processing';
+            bar.style.width = '30%';
+          }else if(data.status === 'failed'){
+            badge.textContent = '失败';
+            badge.className = 'badge error';
+            bar.style.background = 'linear-gradient(135deg,#f87171,#ef4444)';
+            clearInterval(interval);
+            stat.fail++; refreshStats();
+          }
+        }catch(e){ console.error('Polling error', e); }
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
