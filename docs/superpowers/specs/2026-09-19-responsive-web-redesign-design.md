@@ -4,7 +4,7 @@
 
 ## 1. 目标
 
-将 `D:\code\nginx-1.18.0\html\hmdp` 中现有的手机端多页面前端改造成电脑端优先、同时兼容手机的响应式网站。
+将现有的手机端多页面前端纳入 `D:\code\hm-dianping\frontend\hmdp`，并改造成电脑端优先、同时兼容手机的响应式网站。Nginx 改为直接托管仓库中的前端源码。
 
 改版保留现有业务功能、Java API、登录 token、Vue 2、Element UI、Axios 和 Nginx 静态托管方式。项目不引入 Node 构建流程，不迁移到新的前端框架，也不修改后端接口协议。
 
@@ -145,10 +145,10 @@ Logo | 首页 | 店铺分类 | 发布笔记 | 智能问答 | 搜索 | 用户中�
 
 ## 7. 公共组件与文件
 
-新增或整理以下公共文件：
+前端的正式源码位于 Git 仓库中。新增或整理以下公共文件：
 
 ```text
-html/hmdp/
+frontend/hmdp/
 ├─ css/
 │  ├─ desktop.css
 │  ├─ components.css
@@ -167,6 +167,8 @@ html/hmdp/
 - 各业务 CSS：只保存该页面特有的布局。
 
 公共样式类使用 `hmdp-` 前缀，减少与 Element UI 和现有页面样式冲突。
+
+`deploy/nginx/nginx.conf` 保存项目使用的 Nginx 配置模板，静态文件根目录指向 `D:/code/hm-dianping/frontend/hmdp`。本机 `D:\code\nginx-1.18.0` 只保存 Nginx 程序、日志和运行配置，不再作为前端源码目录。这样所有页面、样式、脚本和图片都能由 `hm-dianping-question` 仓库跟踪、回滚和推送。
 
 ## 8. 数据流
 
@@ -199,6 +201,8 @@ html/hmdp/
 本次包含：
 
 - 全部现有业务页面的桌面布局和手机响应式改造。
+- 将现有 Nginx 前端源码迁入 `frontend/hmdp` 并纳入 Git。
+- 提供可复制到本机 Nginx 的项目配置模板。
 - 公共顶部导航、手机底部导航和统一视觉组件。
 - 店铺详情的智能问答入口。
 - 智能问答页面桌面双栏改造。
