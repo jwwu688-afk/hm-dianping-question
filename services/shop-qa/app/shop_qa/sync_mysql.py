@@ -1,4 +1,4 @@
-"""One-shot full rebuild from the project's MySQL shop and blog tables."""
+"""Sync MySQL shops and blogs to Milvus and export readable Markdown."""
 
 import os
 from collections import defaultdict
@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from .index import index_shop
 
 
-def main():
+def load_records() -> tuple[list[dict], list[dict]]:
     import pymysql
 
     load_dotenv()
@@ -28,6 +28,15 @@ def main():
             blogs = cursor.fetchall()
     finally:
         connection.close()
+    return shops, blogs
+
+
+def main():
+    from .export_markdown import write_shop_markdown
+
+    shops, blogs = load_records()
+    paths = write_shop_markdown(shops, blogs, "data/shop-markdown")
+    print(f"exported {len(paths)} Markdown files to data/shop-markdown")
     by_shop = defaultdict(list)
     for blog in blogs:
         by_shop[blog["shop_id"]].append(blog)

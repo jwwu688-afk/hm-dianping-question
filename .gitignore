@@ -31,3 +31,20 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Shop QA Python service ###
+/services/shop-qa/.venv/
+/services/shop-qa/.env
+/services/shop-qa/logs/
+/services/shop-qa/output/
+**/__pycache__/
+*.pyc
+/services/shop-qa/data/
+
+# Verified Hangzhou shop source data and generated RAG documents
+!/services/shop-qa/data/
+/services/shop-qa/data/*
+!/services/shop-qa/data/verified_hangzhou_shops.json
+!/services/shop-qa/data/shop-markdown/
+/services/shop-qa/data/shop-markdown/*
+!/services/shop-qa/data/shop-markdown/shop-10??.md
