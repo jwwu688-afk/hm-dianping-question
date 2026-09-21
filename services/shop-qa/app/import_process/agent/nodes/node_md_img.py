@@ -147,7 +147,13 @@ def summarize_image(image_path: str, root_folder: str, image_content: Tuple[str,
     base64_image = encode_image_to_base64(image_path)
     try:
         # 1. 获取项目统一LLM客户端（自动缓存，传入多模态模型名）
-        lvm_client = get_llm_client(model=lm_config.lv_model)
+        #    图片摘要单独走火山方舟（豆包）—— 通过 base_url/api_key 指定，
+        #    未配置 VL_BASE_URL / VL_API_KEY 时传 None，自动回退到默认供应商。
+        lvm_client = get_llm_client(
+            model=lm_config.lv_model,
+            base_url=lm_config.vl_base_url or None,
+            api_key=lm_config.vl_api_key or None,
+        )
 
         # 加载并渲染提示词（核心：传入所有占位符对应的变量）
         prompt_text = load_prompt(

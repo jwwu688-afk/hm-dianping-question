@@ -23,6 +23,13 @@ class LLMConfig:
     qwen_base_url: str = ""
     qwen_api_key: str = ""
     item_name_model: str = ""
+    # ---- 图片摘要专用供应商：火山方舟（豆包视觉模型）----
+    # 用途：仅给「图片摘要」节点（node_md_img.summarize_image）使用，
+    #       通过 get_llm_client 的 base_url / api_key 参数实现跨供应商混搭。
+    #       两者任一为空时，图片摘要会回退到默认供应商（主 LLM 的地址与密钥），
+    #       不会因为缺配置直接报错。
+    vl_base_url: str = ""
+    vl_api_key: str = ""
 
 lm_config = LLMConfig(
     base_url=os.getenv("OPENAI_BASE_URL"),
@@ -33,4 +40,6 @@ lm_config = LLMConfig(
     qwen_base_url=os.getenv("QWEN_BASE_URL") or "",
     qwen_api_key=os.getenv("QWEN_API_KEY") or "",
     item_name_model=os.getenv("ITEM_NAME_MODEL") or "",
+    vl_base_url=os.getenv("VL_BASE_URL") or "",
+    vl_api_key=os.getenv("VL_API_KEY") or "",
 )

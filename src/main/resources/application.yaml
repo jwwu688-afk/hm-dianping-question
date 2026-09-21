@@ -3,6 +3,12 @@ server:
 spring:
   application:
     name: hmdp
+  servlet:
+    multipart:
+      # 知识库问答支持一次上传多个 PDF/Markdown，单文件上限 20MB
+      # Spring 默认只有 1MB/10MB，不改会被直接拒掉（MaxUploadSizeExceededException）
+      max-file-size: 20MB
+      max-request-size: 200MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/hmdp?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
@@ -27,3 +33,13 @@ logging:
     com.hmdp: debug
   pattern:
     dateformat: mm:ss.SSS
+shop:
+  qa:
+    # 以下三个地址都是本机 Python 服务，改动前请先确认对应端口在监听
+    # 旧版「智能问答」前端（html/hmdp）走这个：店铺问答 / 全站问答 / 文档上传
+    url: http://127.0.0.1:8003
+    # 新版「知识库问答」前端（html/hmdp-next）走下面两个：
+    # 问答服务（query_process/api/query_service.py）：/query、/stream、/history
+    query-url: http://127.0.0.1:8001
+    # 导入服务（import_process/api/file_import_service.py）：/upload、/status
+    import-url: http://127.0.0.1:8002

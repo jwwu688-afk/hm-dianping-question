@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>黑马点评知识库</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, "Microsoft YaHei", sans-serif; color: #172331; background: #f5f7fa; }
+    body { max-width: 900px; margin: 36px auto; padding: 0 18px; }
+    h1 { font-size: 28px; margin-bottom: 4px; }
+    .hint { color: #627181; margin: 0 0 24px; }
+    .card { background: white; border: 1px solid #dfe5ec; border-radius: 12px; padding: 22px; margin: 16px 0; box-shadow: 0 3px 12px #15283c09; }
+    label { display: block; margin: 12px 0 5px; font-weight: 600; }
+    input, textarea, select { box-sizing: border-box; width: 100%; padding: 10px; border: 1px solid #cbd5df; border-radius: 7px; font: inherit; }
+    textarea { min-height: 86px; resize: vertical; }
+    button { margin-top: 14px; padding: 10px 18px; border: 0; border-radius: 7px; color: white; background: #1671ca; font: inherit; cursor: pointer; }
+    button:hover { background: #075fac; }
+    button.secondary { background: #53677a; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+    .status { color: #526171; }
+  </style>
+</head>
+<body>
+  <h1>黑马点评知识库</h1>
+  <p class="hint">上传文档并提问。店铺 ID 留空时，文档作为全站资料。</p>
+  <section class="card">
+    <h2>上传文档</h2>
+    <label for="owner">用户 ID</label><input id="owner" type="number" min="1" value="1">
+    <label for="shop">关联店铺 ID（可选）</label><input id="shop" type="number" min="1" placeholder="留空为全站资料">
+    <label for="file">PDF 或 Markdown 文件</label><input id="file" type="file" accept=".pdf,.md">
+    <button id="upload">上传并处理</button>
+    <button id="refresh" class="secondary">查看我的文档</button>
+    <pre id="uploadResult" class="status"></pre>
+    <div id="documents"></div>
+  </section>
+  <section class="card">
+    <h2>提问</h2>
+    <label for="askShop">店铺 ID（留空为全站问答）</label><input id="askShop" type="number" min="1">
+    <label for="question">问题</label><textarea id="question" placeholder="例如：这家店有什么特色？"></textarea>
+    <button id="ask">发送问题</button>
+    <pre id="answer" class="status"></pre>
+  </section>
+  <script>
+    const $ = id => document.getElementById(id);
+    const owner = () => Number($('owner').value);
+    async function json(response) {
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || `HTTP ${response.status}`);
+      return data;
+    }
+    $('upload').onclick = async () => {
+      const file = $('file').files[0];
+      if (!file || !owner()) { $('uploadResult').textContent = '请选择文件并填写用户 ID。'; return; }
+      const form = new FormData();
+      form.append('file', file); form.append('owner_id', String(owner()));
+      form.append('shop_id', $('shop').value || '0');
+      $('uploadResult').textContent = '上传中…';
+      try {
+        const data = await json(await fetch('/documents', {method:'POST', body:form}));
+        $('uploadResult').textContent = `已接收。文档 ID：${data.document_id}，请点“查看我的文档”查询处理结果。`;
+      } catch (error) { $('uploadResult').textContent = error.message; }
+    };
+    $('refresh').onclick = async () => {
+      if (!owner()) return;
+      try {
+        const data = await json(await fetch(`/documents?owner_id=${owner()}`));
+        $('documents').replaceChildren();
+        for (const item of data.items) {
+          const line = document.createElement('p');
+          line.textContent = `${item.filename} · ${item.status} · ${item.chunk_count} 个片段${item.error ? ' · ' + item.error : ''}`;
+          $('documents').appendChild(line);
+        }
+      } catch (error) { $('documents').textContent = error.message; }
+    };
+    $('ask').onclick = async () => {
+      const question = $('question').value.trim();
+      if (question.length < 2) { $('answer').textContent = '请至少输入两个字。'; return; }
+      const shop = $('askShop').value;
+      $('answer').textContent = '正在查找资料…';
+      try {
+        const path = shop ? `/shops/${Number(shop)}/ask` : '/ask';
+        const data = await json(await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({question})}));
+        const sources = data.sources.map(s => `[${s.ref}] ${s.title || s.type} (${s.type}: ${s.id})`).join('\n');
+        $('answer').textContent = data.answer + (sources ? '\n\n参考资料：\n' + sources : '');
+      } catch (error) { $('answer').textContent = error.message; }
+    };
+  </script>
+</body>
+</html>
