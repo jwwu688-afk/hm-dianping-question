@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>知识库问答 - 黑马点评</title>
+  <link rel="stylesheet" href="./css/element.css">
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/rag.css?v=20260921j">
+  <link rel="stylesheet" href="./css/desktop.css">
+  <link rel="stylesheet" href="./css/components.css">
+</head>
+<body>
+<div id="app">
+  <hmdp-header active="rag"></hmdp-header>
+  <div class="rag-mobile-header"><button @click="goBack"><i class="el-icon-arrow-left"></i></button><strong>知识库问答</strong><span></span></div>
+  <main class="hmdp-container hmdp-shell rag-content">
+    <section class="hero">
+      <div class="hero-icon"><i class="el-icon-chat-dot-round"></i></div>
+      <div><h1>通用知识库助手</h1><p>从 Java 上传资料，自动完成解析、检索、联网搜索与回答。</p></div>
+      <div class="hero-badge"><i class="el-icon-connection"></i> RAG 全流程</div>
+    </section>
+    <div class="rag-mobile-tabs">
+      <button :class="{'is-active': activeTab === 'ask'}" @click="activeTab='ask'">知识问答</button>
+      <button :class="{'is-active': activeTab === 'documents'}" @click="activeTab='documents'">导入进度</button>
+    </div>
+    <div class="hmdp-rag-workspace">
+      <aside class="rag-documents-column" :class="{'is-mobile-active': activeTab === 'documents'}">
+        <section class="panel upload-panel">
+          <div class="section-title"><i class="el-icon-upload2"></i> 上传知识文档</div>
+          <p class="panel-hint">支持 PDF 或 Markdown，可一次多选。格式与解析规则全部由服务端校验。</p>
+          <div class="upload-zone" :class="{'is-picked': selectedFiles.length}" @click="chooseFiles">
+            <i class="el-icon-upload2"></i>
+          </div>
+          <input ref="files" style="display:none" class="file-input-hidden" type="file" multiple accept=".pdf,.md" @change="captureFiles">
+          <label class="stream-option"><input v-model="uploadRealtime" type="checkbox"> 实时显示执行步骤</label>
+          <el-button class="hmdp-button-primary primary-action" :loading="uploading" @click="upload">{{uploading ? '正在上传' : '上传并开始解析'}}</el-button>
+          <p class="shortcut">选好文件后点上方按钮开始解析</p>
+        </section>
+        <div class="rag-documents-rest">
+          <section class="panel picked-panel" v-if="selectedFiles.length">
+            <div class="picked-list">
+              <div class="picked-row" v-for="(file, index) in selectedFiles" :key="file.name + '-' + index">
+                <span class="picked-name" :title="file.name">{{file.name}}</span>
+                <button class="picked-remove" @click.stop="removePicked(index)">移除</button>
+              </div>
+            </div>
+          </section>
+          <section class="panel task-panel">
+          <div class="section-title"><i class="el-icon-document-checked"></i> 本次导入任务</div>
+          <div class="empty" v-if="tasks.length === 0">上传后将在这里显示解析步骤</div>
+          <div class="rag-task-list">
+            <article class="rag-task-card" v-for="task in tasks" :key="task.taskId">
+              <div class="rag-task-heading"><strong :title="task.filename">{{task.filename}}</strong><span class="rag-task-actions"><button class="rag-task-remove" @click="removeTask(task)" title="从列表移除">移除</button></span></div>
+              <small>Task ID：{{task.taskId}}</small>
+              <rag-progress :status="task.status" :done="task.doneList" :running="task.runningList" :show-steps="uploadRealtime"></rag-progress>
+            </article>
+          </div>
+        </section>
+        </div>
+      </aside>
+      <section class="rag-ask-column" :class="{'is-mobile-active': activeTab === 'ask'}">
+        <section class="panel chat-panel">
+          <div class="section-title-row"><div class="section-title"><i class="el-icon-chat-line-round"></i> 小智 · 知识库问答</div><el-button type="text" @click="clearHistory" :disabled="asking">清空对话</el-button></div>
+          <div class="chat-scroll" ref="chatScroll">
+            <div class="chat-empty" v-if="chatMessages.length === 0">
+              <span class="chat-avatar">智</span>
+              <p>我是小智，想了解什么直接发消息就行，可以反复追问。提问后会显示检索、联网搜索等真实执行步骤。</p>
+            </div>
+            <div class="chat-row" v-for="msg in chatMessages" :key="msg.key" :class="'is-' + msg.role">
+              <div class="chat-item">
+                <span class="chat-name" v-if="msg.role !== 'user'">小智</span>
+                <div class="chat-bubble">
+                  <rag-progress v-if="msg.progress" :status="msg.status || 'processing'"
+                                :done="msg.done" :running="msg.running" :show-steps="streamEnabled"></rag-progress>
+                  <div class="chat-text" v-if="msg.text">{{ msg.text }}</div>
+                  <div class="chat-error" v-if="msg.error">! {{ msg.error }}</div>
+                  <div class="answer-images" v-if="msg.images && msg.images.length"><img v-for="url in msg.images" :key="url" :src="url" alt="回答相关图片" @error="useFallbackImage"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-compose">
+            <div class="question-examples"><span>示例：</span><button @click="question='满减券能不能叠加？'">优惠券规则</button><button @click="question='商家入驻需要哪些资质？'">商户入驻</button><button @click="question='退款一般多久到账？'">退款售后</button><button @click="question='会员积分怎么计算？'">会员积分</button></div>
+            <el-input v-model="question" type="textarea" :rows="2" maxlength="500" show-word-limit placeholder="输入你的问题，可连续追问" @keyup.ctrl.enter.native="ask"></el-input>
+            <label class="stream-option"><input v-model="streamEnabled" type="checkbox"> 实时显示执行步骤和回答</label>
+            <el-button class="hmdp-button-primary primary-action" :loading="asking" @click="ask">{{asking ? '正在处理' : '发送问题'}}</el-button>
+            <p class="shortcut">Ctrl + Enter 也可以发送</p>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+  <foot-bar :active-btn="3"></foot-bar>
+</div>
+<!-- 上传 / 提问 共用的进度显示模板：进度条 + 状态 + 节点步骤 -->
+<script type="text/x-template" id="rag-progress-template">
+  <div class="rag-progress" :class="{'is-done': isDone, 'is-failed': isFailed}">
+    <div class="rag-progress-head">
+      <span class="rag-progress-status">{{ statusText }}</span>
+      <span class="rag-progress-percent">{{ percent }}%</span>
+    </div>
+    <div class="rag-progress-track"><span class="rag-progress-fill" :style="{ width: percent + '%' }"></span></div>
+    <div class="rag-progress-steps" v-if="showSteps">
+      <div class="rag-progress-node is-done" v-for="node in done" :key="'d-' + node">✅ {{ node }}</div>
+      <div class="rag-progress-node is-running" v-for="node in running" :key="'r-' + node">⏳ {{ node }}</div>
+      <div class="rag-progress-node is-waiting" v-if="!done.length && !running.length && !isDone && !isFailed">⏳ 等待返回节点进度</div>
+    </div>
+  </div>
+</script>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/header.js"></script>
+<script src="./js/footer.js"></script>
+<script src="./js/rag-stream.js"></script>
+<script>
+  // 上传 / 提问 共用的进度显示组件：进度条 + 状态文字 + 节点步骤。
+  // 两处用同一个模板，保证显示完全一致。
+  Vue.component('rag-progress', {
+    template: '#rag-progress-template',
+    props: {
+      status: { type: String, default: '' },
+      done: { type: Array, default: function () { return []; } },
+      running: { type: Array, default: function () { return []; } },
+      showSteps: { type: Boolean, default: true }
+    },
+    computed: {
+      isDone: function () { return this.status === 'completed'; },
+      isFailed: function () { return this.status === 'failed'; },
+      statusText: function () {
+        return {
+          pending: '等待处理',
+          processing: '处理中',
+          completed: '已完成',
+          failed: '失败'
+        }[this.status] || this.status || '处理中';
+      },
+      // 总节点数前端拿不到，用「已完成 / (已完成+进行中)」估算：
+      // 只要还有节点在跑就必然小于 100%，最后一个节点完成时才到 100%。
+      percent: function () {
+        if (this.isDone) return 100;
+        var total = this.done.length + this.running.length;
+        if (!total) return 0;
+        return Math.round(this.done.length / total * 100);
+      }
+    }
+  });
+
+  new Vue({
+    el: '#app',
+    data: {
+      activeTab: 'ask', selectedFiles: [], tasks: [], uploading: false, uploadRealtime: true,
+      question: '', lastQuestion: '', answer: '', answerImages: [], asking: false, streamEnabled: true,
+      streamConnected: false, queryStatus: '', queryDone: [], queryRunning: [], queryError: '',
+      historyItems: [], sessionId: ''
+    },
+    computed: {
+      // 聊天窗口的消息列表 = 已完成的对话轮次（来自后端会话记录）+ 当前正在进行的这一轮
+      chatMessages: function () {
+        var list = [];
+        (this.historyItems || []).forEach(function (item, index) {
+          list.push({
+            key: 'h-' + (item._id || index),
+            role: item.role === 'user' ? 'user' : 'assistant',
+            text: item.text || '',
+            images: item.image_urls || [],
+            progress: false, status: '', done: [], running: [], error: ''
+          });
+        });
+        var hasLive = this.asking || this.answer || this.queryError
+          || this.queryDone.length || this.queryRunning.length;
+        if (hasLive) {
+          list.push({
+            key: 'live-user', role: 'user', text: this.lastQuestion,
+            images: [], progress: false, status: '', done: [], running: [], error: ''
+          });
+          list.push({
+            key: 'live-assistant', role: 'assistant', text: this.answer,
+            images: this.answerImages, progress: true,
+            status: this.queryStatus || 'processing',
+            done: this.queryDone, running: this.queryRunning, error: this.queryError
+          });
+        }
+        return list;
+      }
+    },
+    watch: {
+      // 有新消息、或有新的流式片段时，自动滚到底部
+      chatMessages: function () { this.scrollChatToBottom(); }
+    },
+    created() {
+      this.sessionId = localStorage.getItem('hmdp_rag_session_id') || this.createSessionId();
+      localStorage.setItem('hmdp_rag_session_id', this.sessionId);
+      // 聊天窗口需要恢复历史会话，所以页面加载时拉一次会话记录（已登录才拉）。
+      // 想省掉这一次请求就注释掉下面这行，代价是刷新后聊天区是空的。
+      if (token) this.loadHistory();
+    },
+    beforeDestroy() {
+      this.tasks.forEach(task => { if (task.timer) clearTimeout(task.timer); });
+    },
+    methods: {
+      goBack() { history.length > 1 ? history.back() : location.href = '/'; },
+      requireLogin() {
+        if (token) return true;
+        this.$message.warning('请先登录后使用此功能');
+        setTimeout(() => location.href = '/login.html', 500);
+        return false;
+      },
+      createSessionId() {
+        if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+        return 'hmdp-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+      },
+      chooseFiles() { if (!this.uploading) this.$refs.files.click(); },
+      captureFiles(event) { this.selectedFiles = Array.from(event.target.files || []); },
+      // 从「待上传」清单里去掉某个已选文件（仅前端，不代表已上传）
+      removePicked(index) {
+        this.selectedFiles.splice(index, 1);
+        // 必须清空原生 input 的值，否则下次再选同一个文件不会触发 change 事件
+        if (this.$refs.files) this.$refs.files.value = '';
+      },
+      // 仅把这条记录从页面上移除（并停掉它的进度轮询），不会动 Milvus 里的向量数据
+      removeTask(task) {
+        if (task.timer) { clearTimeout(task.timer); task.timer = null; }
+        const index = this.tasks.indexOf(task);
+        if (index >= 0) this.tasks.splice(index, 1);
+      },
+      async upload() {
+        if (!this.requireLogin()) return;
+        if (!this.selectedFiles.length) return this.$message.warning('请选择 PDF 或 Markdown 文件');
+        const files = this.selectedFiles.slice();
+        const form = new FormData();
+        files.forEach(file => form.append('files', file, file.name));
+        this.uploading = true;
+        try {
+          const {data} = await axios.post('/rag/upload', form, {timeout: 120000});
+          const taskIds = data.task_ids || [];
+          taskIds.forEach((taskId, index) => {
+            const task = {taskId, filename: files[index] ? files[index].name : `文档 ${index + 1}`, status: 'pending', doneList: [], runningList: [], timer: null};
+            this.tasks.unshift(task);
+            this.pollTask(task);
+          });
+          this.$message.success(`已提交 ${taskIds.length} 个解析任务`);
+          this.selectedFiles = [];
+          this.$refs.files.value = '';
+        } catch (error) {
+          this.$message.error(String(error || '上传失败'));
+        } finally { this.uploading = false; }
+      },
+      async pollTask(task) {
+        try {
+          const {data} = await axios.get('/rag/import/status/' + encodeURIComponent(task.taskId), {timeout: 10000});
+          task.status = data.status || task.status;
+          task.doneList = data.done_list || [];
+          task.runningList = data.running_list || [];
+          if (this.isTerminal(task.status)) { task.timer = null; return; }
+        } catch (error) {
+          task.status = 'failed'; task.runningList = [];
+          this.$message.error(String(error || '获取解析进度失败'));
+          return;
+        }
+        task.timer = setTimeout(() => this.pollTask(task), 2000);
+      },
+      isTerminal(status) { return status === 'completed' || status === 'failed'; },
+      resetQueryState() {
+        this.answer = ''; this.answerImages = []; this.queryStatus = 'processing';
+        this.queryDone = []; this.queryRunning = []; this.queryError = ''; this.streamConnected = false;
+      },
+      // 清掉「当前这一轮」的临时状态。历史会话里已经包含这一轮时调用，避免同一条消息显示两遍
+      clearLiveTurn() {
+        this.answer = ''; this.answerImages = []; this.queryStatus = '';
+        this.queryDone = []; this.queryRunning = []; this.queryError = '';
+      },
+      scrollChatToBottom() {
+        this.$nextTick(function () {
+          var box = this.$refs.chatScroll;
+          if (box) box.scrollTop = box.scrollHeight;
+        });
+      },
+      async ask() {
+        if (!this.requireLogin()) return;
+        const query = this.question.trim();
+        if (query.length < 2) return this.$message.warning('问题至少输入两个字');
+        this.asking = true;
+        this.lastQuestion = query;
+        this.question = ''; // 聊天窗口：发出去就清空输入框，方便直接追问
+        this.resetQueryState();
+        try {
+          const {data} = await axios.post('/rag/query', {query, session_id: this.sessionId, is_stream: this.streamEnabled}, {timeout: 120000});
+          this.sessionId = data.session_id || this.sessionId;
+          localStorage.setItem('hmdp_rag_session_id', this.sessionId);
+          if (this.streamEnabled) await this.readStream(this.sessionId);
+          else { this.answer = data.answer || ''; this.queryStatus = 'completed'; this.finishQuery(); }
+        } catch (error) {
+          this.queryError = String(error || '问答服务暂不可用');
+          this.finishQuery();
+        }
+      },
+      async readStream(sessionId) {
+        const response = await fetch('/api/rag/stream/' + encodeURIComponent(sessionId), {headers: {authorization: token}});
+        if (!response.ok || !response.body) throw new Error('流式问答连接失败');
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        const parser = RagStream.createParser(event => this.handleStreamEvent(event));
+        while (true) {
+          const result = await reader.read();
+          if (result.done) break;
+          parser.push(decoder.decode(result.value, {stream: true}));
+        }
+        parser.push(decoder.decode());
+        parser.finish();
+        if (this.asking) { this.queryError = '问答流已结束，但未收到最终回答'; this.finishQuery(); }
+      },
+      handleStreamEvent(event) {
+        switch (event.event) {
+          case 'ready': this.streamConnected = true; break;
+          case 'progress':
+            this.queryStatus = event.data.status || this.queryStatus;
+            this.queryDone = event.data.done_list || [];
+            this.queryRunning = event.data.running_list || [];
+            break;
+          case 'delta': this.answer += event.data.delta || ''; break;
+          case 'final':
+          case 'final_answer':
+            this.answer = event.data.answer || this.answer;
+            this.answerImages = event.data.image_urls || [];
+            this.finishQuery();
+            break;
+          case 'error':
+            this.queryError = event.data.error || '问答服务暂不可用';
+            this.finishQuery();
+            break;
+        }
+      },
+      finishQuery() {
+        this.asking = false;
+        if (!this.queryError) this.queryStatus = 'completed';
+        this.loadHistory();
+      },
+      async loadHistory() {
+        if (!token) return;
+        try {
+          const {data} = await axios.get('/rag/history/' + encodeURIComponent(this.sessionId), {timeout: 10000});
+          this.historyItems = data.items || [];
+          // 会话记录里已包含刚完成的那一轮，清掉临时态，避免同一条消息出现两遍。
+          // 放在成功分支里：拉取失败时保留临时态，消息不会凭空消失。
+          this.clearLiveTurn();
+        } catch (_) { /* 拉取失败就保持现状，不要清空已有消息 */ }
+      },
+      async clearHistory() {
+        if (!this.requireLogin()) return;
+        try {
+          await axios.delete('/rag/history/' + encodeURIComponent(this.sessionId), {timeout: 10000});
+        } catch (error) {
+          return this.$message.error(String(error || '清空对话失败'));
+        }
+        this.historyItems = [];
+        this.clearLiveTurn();
+        this.lastQuestion = '';
+        this.$message.success('对话已清空');
+      }
+    }
+  });
+</script>
+</body>
+</html>

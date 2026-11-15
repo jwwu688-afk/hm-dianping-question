@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/info.css" rel="stylesheet">
+
+  <style type="text/css">
+
+  </style>
+    <link rel="stylesheet" href="./css/desktop.css">
+    <link rel="stylesheet" href="./css/components.css">
+</head>
+<body>
+<div id="app">
+    <hmdp-header active="profile"></hmdp-header>
+  <div class="profile-mobile-bar"><button @click="goBack"><i class="el-icon-arrow-left"></i></button><strong>编辑资料</strong><span></span></div>
+  <main class="hmdp-container hmdp-shell hmdp-profile-edit">
+    <section class="profile-edit-card hmdp-card hmdp-card--padded">
+      <div class="profile-edit-heading"><div><h1>编辑个人资料</h1><p>完善资料，让其他用户更了解你。</p></div><img @error="useFallbackImage" :src="user.icon || '/imgs/icons/default-icon.png'" alt="头像"></div>
+      <div class="profile-form-field"><label>昵称</label><el-input :value="user.nickName" disabled></el-input><small>昵称修改功能暂未开放</small></div>
+      <div class="profile-form-field"><label>所在城市</label><el-input v-model="form.city" maxlength="32" placeholder="例如：杭州"></el-input></div>
+      <div class="profile-form-field"><label>个人简介</label><el-input type="textarea" :rows="4" v-model="form.introduce" maxlength="128" show-word-limit placeholder="介绍一下自己"></el-input></div>
+      <div class="profile-form-field"><label>性别</label><el-radio-group v-model="form.gender"><el-radio :label="false">男</el-radio><el-radio :label="true">女</el-radio></el-radio-group></div>
+      <div class="profile-form-field"><label>生日</label><el-date-picker v-model="form.birthday" type="date" value-format="yyyy-MM-dd" placeholder="选择生日"></el-date-picker></div>
+      <div class="profile-form-actions"><el-button @click="goBack">取消</el-button><el-button class="hmdp-button-primary" :loading="saving" @click="saveProfile">保存资料</el-button></div>
+    </section>
+  </main>
+  <foot-bar :active-btn="4"></foot-bar>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/header.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+
+  const app = new Vue({
+    el: "#app",
+    data: {
+      user: {},
+      form: {city: "", introduce: "", gender: null, birthday: ""},
+      saving: false
+    },
+    created() { this.checkLogin(); },
+    methods: {
+      checkLogin() {
+        axios.get("/user/me")
+          .then(({data}) => {
+            this.user = data || {};
+            return axios.get("/user/info/" + this.user.id);
+          })
+          .then(({data}) => { this.form = Object.assign({}, this.form, data || {}); })
+          .catch(err => {
+            this.$message.error(err);
+            setTimeout(() => location.href = "/login.html", 500);
+          });
+      },
+      saveProfile() {
+        if (this.saving) return;
+        this.saving = true;
+        axios.put("/user/info", this.form)
+          .then(() => {
+            sessionStorage.setItem("userInfo", JSON.stringify(this.form));
+            this.$message.success("资料已保存");
+            location.href = "/info.html";
+          })
+          .catch(err => this.$message.error(err))
+          .finally(() => this.saving = false);
+      },
+      goBack() { history.back(); }
+    }
+  });
+</script>
+</body>
+</html>

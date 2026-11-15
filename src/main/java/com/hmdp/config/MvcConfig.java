@@ -32,3 +32,21 @@ public class MvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);
     }
 }
+
+/*
+ * 客户端请求
+ *    │
+ *    ▼
+ * [RefreshTokenInterceptor]  order=0  拦截 /**
+ *    ├─ 有 token？→ 查 Redis → 用户存在？
+ *    │       ├─ 是 → 刷新 token 有效期，存 ThreadLocal
+ *    │       └─ 否 → 放行（ThreadLocal 为空）
+ *    ▼
+ * [LoginInterceptor]  order=1  拦截除白名单外的路径
+ *    ├─ ThreadLocal 有用户？→ 放行
+ *    └─ 没有 → 返回 401
+ *    ▼
+ * Controller
+ *    ▼
+ * ThreadLocal 清理（afterCompletion）
+ */

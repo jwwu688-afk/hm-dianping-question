@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+
+  <link href="./css/shop-detail.css" rel="stylesheet">
+  <link href="./css/main.css" rel="stylesheet">
+
+  <style type="text/css">
+
+  </style>
+    <link rel="stylesheet" href="./css/desktop.css">
+    <link rel="stylesheet" href="./css/components.css">
+</head>
+<body>
+<div id="app">
+    <hmdp-header active="shops"></hmdp-header>
+  <div class="shop-detail-mobile-bar">
+    <button @click="goBack"><i class="el-icon-arrow-left"></i></button>
+    <strong>店铺详情</strong>
+    <span></span>
+  </div>
+  <main class="hmdp-container hmdp-shell">
+    <div class="hmdp-shop-detail-grid">
+      <section class="shop-detail-main">
+        <article class="shop-hero hmdp-card hmdp-card--padded">
+          <div class="shop-title">{{shop.name || '店铺详情'}}</div>
+          <div class="shop-rate">
+            <el-rate disabled :value="shop.score/10" text-color="#F63" show-score></el-rate>
+            <span>{{shop.comments || 0}}条评价</span>
+          </div>
+          <div class="shop-rate-info">口味 4.9&nbsp;&nbsp; 环境 4.8&nbsp;&nbsp; 服务 4.7</div>
+          <div class="shop-rank">
+            <img @error="useFallbackImage" src="/imgs/bd.png" width="63" height="20" alt="好评榜">
+            <span>本区好评店铺</span>
+          </div>
+          <div class="shop-images">
+            <div v-for="(s,i) in shop.images" :key="i"><img @error="useFallbackImage" :src="s" alt="店铺环境"></div>
+          </div>
+          <div class="shop-address"><i class="el-icon-map-location"></i><span>{{shop.address || '地址待补充'}}</span></div>
+        </article>
+
+        <article class="shop-comments hmdp-card hmdp-card--padded">
+          <div class="comments-head"><div>网友评价 <span>（{{shop.comments || 0}}）</span></div><div><i class="el-icon-arrow-right"></i></div></div>
+          <div class="comment-tags">
+            <div class="tag">味道赞</div><div class="tag">菜品不错</div><div class="tag">回头客</div><div class="tag">朋友聚餐</div>
+          </div>
+          <div class="comment-list">
+            <div class="comment-box" v-for="i in 3" :key="i">
+              <div class="comment-icon"><img @error="useFallbackImage" src="/imgs/icons/default-icon.png" alt="用户头像"></div>
+              <div class="comment-info">
+                <div class="comment-user">热心食客 <span>Lv5</span></div>
+                <div class="comment-score">打分 <el-rate disabled :value="4.5"></el-rate></div>
+                <p>菜品和环境都很不错，适合与朋友一起到店体验。</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <aside class="shop-detail-sidebar">
+        <div class="hmdp-card hmdp-card--padded shop-action-card">
+          <div class="shop-meta-row"><span><i class="el-icon-watch"></i> 营业时间</span><strong>{{shop.openHours || '以店内公示为准'}}</strong></div>
+          <div class="shop-meta-row"><span>人均消费</span><strong>￥{{shop.avgPrice || '--'}}</strong></div>
+          <div class="shop-meta-address">{{shop.address || '地址待补充'}}</div>
+          <el-button class="hmdp-button-primary shop-ai-button" @click="askShop"><i class="el-icon-chat-dot-round"></i> 询问 AI：这家店怎么样</el-button>
+        </div>
+
+        <div class="shop-voucher hmdp-card hmdp-card--padded">
+          <h3><span class="voucher-icon">券</span> 代金券</h3>
+          <div class="voucher-box" v-for="v in vouchers" :key="v.id" v-if="!isEnd(v)">
+            <div class="voucher-left">
+              <div class="voucher-title">{{v.title}}</div>
+              <div class="voucher-subtitle">{{v.subTitle}}</div>
+              <div class="voucher-price"><strong>￥{{util.formatPrice(v.payValue)}}</strong><span>{{(v.payValue*10)/v.actualValue}}折</span></div>
+            </div>
+            <div class="voucher-right">
+              <button class="voucher-btn" :disabled="isNotBegin(v) || v.stock < 1" @click="seckill(v)">{{v.type ? '限时抢购' : '抢购'}}</button>
+              <small v-if="v.type">剩余 {{v.stock}} 张</small>
+            </div>
+          </div>
+          <div class="hmdp-empty" v-if="vouchers.length === 0">暂无可用优惠券</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+  <foot-bar :active-btn="2"></foot-bar>
+  <div class="copyright">
+    copyright ©2021 hmdp.com
+  </div>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/header.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+
+  const app = new Vue({
+    el: "#app",
+    data: {
+      util,
+      shop: {},
+      vouchers: []
+    },
+    created() {
+      // 获取参数
+      let shopId = util.getUrlParam("id");
+      // 查询酒店信息
+      this.queryShopById(shopId);
+      // 查询优惠券信息
+      this.queryVoucher(shopId);
+    },
+    methods: {
+      goBack() {
+        history.back();
+      },
+      askShop() {
+        if (!this.shop.id) {
+          this.$message.warning("店铺信息正在加载，请稍后再试");
+          return;
+        }
+        location.href = '/rag.html?shopId=' + encodeURIComponent(this.shop.id);
+      },
+      queryShopById(shopId) {
+        axios.get("/shop/" + shopId)
+        .then(({data}) => {
+          data.images = (data.images || "").split(",").filter(Boolean)
+          this.shop = data
+        })
+        .catch(err => this.$message.error(err))
+      },
+      queryVoucher(shopId) {
+        axios.get("/voucher/list/" + shopId)
+        .then(({data}) => {
+          this.vouchers = data;
+        })
+        .catch(err => this.$message.error(err))
+      },
+      formatTime(v){
+        let b = new Date(v.beginTime);
+        let e = new Date(v.endTime);
+        return b.getMonth() + 1 + "月" + b.getDate() + "日 "
+          +  b.getHours() + ":" + this.formatMinutes(b.getMinutes())
+          + " ~ "/*  + e.getMonth() + 1 + "月" + e.getDate() + "日 " */
+          +  e.getHours() + ":" + this.formatMinutes(e.getMinutes());
+      },
+      formatMinutes(m){
+        if(m < 10) m = "0" + m
+        return m;
+      },
+      isNotBegin(v){
+        return new Date(v.beginTime).getTime() > new Date().getTime();
+      },
+      isEnd(v){
+        return new Date(v.endTime).getTime() < new Date().getTime();
+      },
+      seckill(v){
+        if(!token){
+          this.$message.error("请先登录")
+          // 未登录，跳转
+          setTimeout(() => {
+            location.href = "/login.html"
+          }, 200);
+          return;
+        }
+        if(this.isNotBegin(v)){
+          this.$message.error("优惠券抢购尚未开始！")
+          return;
+        }
+        if(this.isEnd(v)){
+          this.$message.error("优惠券抢购已经结束！")
+          return;
+        }
+        if(v.stock < 1){
+          this.$message.error("库存不足，请刷新再试试！")
+          return;
+        }
+        let id = v.id;
+        // 秒杀抢购
+        axios.post("/voucher-order/seckill/" + id)
+        .then(({data}) => {
+          // 抢购成功，这里输出订单id，支付功能TODO
+          this.$message.success("抢购成功，订单id：" + data)
+        })
+        .catch(err => this.$message.error(err))
+      }
+    }
+  })
+</script>
+</body>
+</html>

@@ -107,11 +107,11 @@ def step_2_vectorize_and_query(item_names: List[str]) -> List[Dict]:
                 dense_vector = embeddings.get("dense")[i]
                 sparse_vector = embeddings.get("sparse")[i]
 
-                # 构造混合搜索请求
+                # 构造混合搜索请求,把"一个查询"拆成两个 AnnSearchRequest
                 reqs = create_hybrid_search_requests(
                     dense_vector=dense_vector,
                     sparse_vector=sparse_vector,
-                    limit=5
+                    limit=5  # 每路各自召回 5 条
                 )
 
                 # 执行混合搜索
@@ -168,7 +168,7 @@ def step_3_align_item_names(query_results: List[Dict]) -> Dict:
     options = []
 
     for res in query_results:
-        extracted_name = res.get("extracted_name", "").strip()  # llm 生成的item_name
+        extracted_name = res.get("extracted_name", "").strip()  # llm 生成的可能的item_name
         matches = res.get("matches", []) or []  # 匹配的item_name和他的分数
         
         if not matches:

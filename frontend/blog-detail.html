@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+
+  <link href="./css/blog-detail.css" rel="stylesheet">
+  <link href="./css/main.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="./css/desktop.css">
+    <link rel="stylesheet" href="./css/components.css">
+</head>
+<body>
+<div id="app">
+    <hmdp-header active=""></hmdp-header>
+  <div class="blog-mobile-bar">
+    <button @click="goBack"><i class="el-icon-arrow-left"></i></button><strong>探店笔记</strong><span></span>
+  </div>
+  <main class="hmdp-container hmdp-shell">
+    <div class="hmdp-blog-layout">
+      <article class="blog-reader hmdp-card" v-loading="loading">
+        <div class="blog-gallery" :class="galleryClass" v-if="visibleImages.length">
+          <figure class="blog-gallery__item" :class="{'blog-gallery__lead': i === 0}" v-for="(img, i) in visibleImages" :key="img + i">
+            <img @error="useFallbackImage" :src="img" :alt="'探店图片 ' + (i + 1)">
+            <span class="blog-gallery__more" v-if="i === 4 && blog.images.length > 5">+{{blog.images.length - 5}}</span>
+          </figure>
+        </div>
+        <div class="blog-reader__body">
+          <header class="blog-article-header">
+            <div class="blog-article-header__eyebrow"><i class="el-icon-camera"></i> 真实探店记录</div>
+            <h1>{{blog.title || '探店笔记'}}</h1>
+            <div class="blog-publish-meta">
+              <span><i class="el-icon-time"></i>{{formatTime(blog.createTime)}}</span>
+              <span><i class="el-icon-thumb"></i>{{blog.liked || 0}} 人觉得值得</span>
+            </div>
+          </header>
+          <div class="blog-text" v-html="blog.content || '作者暂未填写正文'"></div>
+
+          <div class="blog-shop-card" v-if="shop.id" @click="toShop">
+            <img class="blog-shop-card__cover" @error="useFallbackImage" :src="shop.image || '/imgs/icons/default-icon.png'" alt="店铺图片">
+            <div class="blog-shop-card__content">
+              <span class="blog-shop-card__label">笔记关联店铺</span>
+              <strong>{{shop.name}}</strong>
+              <div class="blog-shop-card__rating"><el-rate disabled :value="shop.score/10"></el-rate><b>{{shop.score ? (shop.score / 10).toFixed(1) : '暂无评分'}}</b></div>
+              <span class="blog-shop-card__address"><i class="el-icon-location-outline"></i>{{shop.address || shop.area || '查看店铺位置'}}</span>
+            </div>
+            <div class="blog-shop-card__price"><strong>￥{{shop.avgPrice || '--'}}</strong><span>/人</span><i class="el-icon-arrow-right"></i></div>
+          </div>
+
+          <div class="blog-reading-actions">
+            <button :class="{'is-liked': blog.isLike}" @click="addLike">
+              <i :class="blog.isLike ? 'el-icon-success' : 'el-icon-thumb'"></i>
+              <span>{{blog.isLike ? '已点赞' : '觉得值得'}}</span>
+              <b>{{blog.liked || 0}}</b>
+            </button>
+            <div class="blog-reading-actions__people" v-if="likes.length">
+              <div class="like-users"><img v-for="u in likes.slice(0, 8)" :key="u.id" @error="useFallbackImage" :src="u.icon || '/imgs/icons/default-icon.png'" alt="点赞用户"></div>
+              <span>{{likes.length}} 位食客点赞</span>
+            </div>
+            <span class="blog-reading-actions__hint" v-else>喜欢这篇笔记，就点个赞吧</span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="hmdp-blog-author-card">
+        <div class="hmdp-card hmdp-card--padded author-card">
+          <span class="author-card__label">本篇作者</span>
+          <div class="author-card__profile" @click="toOtherInfo">
+            <img @error="useFallbackImage" :src="blog.icon || '/imgs/icons/default-icon.png'" alt="作者头像">
+            <div><strong>{{blog.name || '探店达人'}}</strong><span>分享真实、有用的探店体验</span></div>
+            <i class="el-icon-arrow-right"></i>
+          </div>
+          <el-button class="author-card__follow" @click="follow" v-if="!user || user.id !== blog.userId">{{followed ? '已关注' : '+ 关注作者'}}</el-button>
+        </div>
+        <div class="hmdp-card hmdp-card--padded like-card">
+          <div class="like-card__number"><strong>{{blog.liked || 0}}</strong><span>人觉得值得</span></div>
+          <button :class="{'is-liked': blog.isLike}" @click="addLike"><i class="el-icon-thumb"></i> {{blog.isLike ? '已点赞' : '给这篇笔记点赞'}}</button>
+          <div class="like-card__empty" v-if="!likes.length">成为第一个点赞的人</div>
+          <div class="like-users" v-else><img v-for="u in likes.slice(0, 8)" :key="u.id" @error="useFallbackImage" :src="u.icon || '/imgs/icons/default-icon.png'" alt="点赞用户"></div>
+        </div>
+        <div class="hmdp-card hmdp-card--padded related-card"><span>继续发现</span><h3>还有更多城市好味道</h3><p>浏览热门探店内容，把下一家值得去的店加入清单。</p><a href="/index.html">发现更多笔记 <i class="el-icon-right"></i></a></div>
+      </aside>
+    </div>
+  </main>
+  <foot-bar :active-btn="1"></foot-bar>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/header.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      util,
+      blog: {images: []},
+      shop: {},
+      likes: [],
+      user: {},
+      followed: false,
+      loading: false
+    },
+    computed: {
+      visibleImages() {
+        return (this.blog.images || []).slice(0, 5);
+      },
+      galleryClass() {
+        const count = (this.blog.images || []).length;
+        if (count <= 1) return "blog-gallery--single";
+        if (count === 2) return "blog-gallery--double";
+        if (count === 3) return "blog-gallery--triple";
+        return "blog-gallery--many";
+      }
+    },
+    created() {
+      this.queryBlogById(util.getUrlParam("id"));
+    },
+    methods: {
+      goBack() { history.back(); },
+      toOtherInfo() {
+        location.href = this.blog.userId === this.user.id ? "/info.html" : "/other-info.html?id=" + this.blog.userId;
+      },
+      toShop() { if (this.shop.id) location.href = "/shop-detail.html?id=" + this.shop.id; },
+      queryBlogById(id) {
+        this.loading = true;
+        axios.get("/blog/" + id)
+          .then(({data}) => {
+            data.images = (data.images || "").split(",").filter(Boolean);
+            this.blog = data;
+            this.queryShopById(data.shopId);
+            this.queryLikeList(id);
+            this.queryLoginUser();
+          })
+          .catch(err => this.$message.error(err))
+          .finally(() => this.loading = false);
+      },
+      queryShopById(shopId) {
+        if (!shopId) return;
+        axios.get("/shop/" + shopId)
+          .then(({data}) => { data.image = (data.images || "").split(",")[0]; this.shop = data; })
+          .catch(err => this.$message.error(err));
+      },
+      queryLikeList(id) {
+        axios.get("/blog/likes/" + id).then(({data}) => this.likes = data || []).catch(() => this.likes = []);
+      },
+      addLike() {
+        axios.put("/blog/like/" + this.blog.id)
+          .then(() => { this.blog.isLike = !this.blog.isLike; this.blog.liked = Math.max(0, Number(this.blog.liked || 0) + (this.blog.isLike ? 1 : -1)); this.queryLikeList(this.blog.id); })
+          .catch(err => this.$message.error(err));
+      },
+      isFollowed() {
+        axios.get("/follow/or/not/" + this.blog.userId).then(({data}) => this.followed = data).catch(() => this.followed = false);
+      },
+      follow() {
+        if (!token) { location.href = "/login.html"; return; }
+        axios.put("/follow/" + this.blog.userId + "/" + !this.followed)
+          .then(() => { this.followed = !this.followed; this.$message.success(this.followed ? "已关注" : "已取消关注"); })
+          .catch(err => this.$message.error(err));
+      },
+      queryLoginUser() {
+        if (!token) return;
+        axios.get("/user/me").then(({data}) => { this.user = data || {}; if (this.user.id !== this.blog.userId) this.isFollowed(); }).catch(() => {});
+      },
+      formatTime(value) {
+        const date = value ? new Date(value) : null;
+        if (!date || Number.isNaN(date.getTime())) return "刚刚";
+        return date.getFullYear() + "年" + (date.getMonth() + 1) + "月" + date.getDate() + "日";
+      }
+    }
+  });
+</script>
+</body>
+</html>

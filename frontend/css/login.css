@@ -1,0 +1,290 @@
+.hmdp-login-layout {
+    box-sizing: border-box;
+    min-height: calc(100vh - 64px);
+    display: grid;
+    padding: 44px 24px;
+    place-items: center;
+    background:
+        radial-gradient(circle at 12% 16%, rgba(255, 102, 51, .12), transparent 30%),
+        radial-gradient(circle at 88% 84%, rgba(255, 176, 110, .14), transparent 26%),
+        #f5f7fa;
+}
+
+.hmdp-login-card {
+    width: min(100%, 1120px);
+    min-height: 620px;
+    display: grid;
+    grid-template-columns: minmax(360px, 44%) minmax(0, 56%);
+    overflow: hidden;
+    border: 1px solid rgba(229, 231, 235, .9);
+    border-radius: 28px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(31, 35, 41, .13);
+}
+
+.hmdp-login-brand {
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 60px 54px 42px;
+    background: linear-gradient(145deg, #ff5c35 0%, #ff7043 52%, #ff9858 100%);
+    color: #fff;
+}
+
+.hmdp-login-brand::before,
+.hmdp-login-brand::after {
+    position: absolute;
+    content: "";
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 50%;
+}
+
+.hmdp-login-brand::before {
+    width: 390px;
+    height: 390px;
+    top: -170px;
+    right: -190px;
+    box-shadow: 0 0 0 45px rgba(255, 255, 255, .05);
+}
+
+.hmdp-login-brand::after {
+    width: 230px;
+    height: 230px;
+    left: -130px;
+    bottom: -110px;
+    box-shadow: 0 0 0 34px rgba(255, 255, 255, .05);
+}
+
+.hmdp-login-brand__content,
+.hmdp-login-brand__quote {
+    position: relative;
+    z-index: 1;
+}
+
+.hmdp-login-brand__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2.4px;
+}
+
+.hmdp-login-brand__eyebrow span {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    place-items: center;
+    background: #fff;
+    color: #ff6633;
+    font-size: 14px;
+    letter-spacing: 0;
+    box-shadow: 0 8px 24px rgba(178, 55, 17, .18);
+}
+
+.hmdp-login-brand h1 {
+    margin: 46px 0 18px;
+    font-size: clamp(38px, 4vw, 52px);
+    line-height: 1.2;
+    letter-spacing: -1px;
+}
+
+.hmdp-login-brand p {
+    max-width: 380px;
+    margin: 0;
+    color: rgba(255, 255, 255, .86);
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.hmdp-login-features { display: grid; gap: 16px; margin-top: 36px; }
+.hmdp-login-features > div { display: flex; align-items: center; gap: 13px; }
+.hmdp-login-features i {
+    display: grid;
+    flex: 0 0 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 12px;
+    place-items: center;
+    background: rgba(255, 255, 255, .14);
+    font-size: 18px;
+}
+.hmdp-login-features span { display: grid; gap: 3px; }
+.hmdp-login-features strong { font-size: 14px; }
+.hmdp-login-features small { color: rgba(255, 255, 255, .7); font-size: 12px; }
+
+.hmdp-login-brand__quote {
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, .2);
+    color: rgba(255, 255, 255, .78);
+    font-size: 13px;
+}
+
+.hmdp-login-panel {
+    box-sizing: border-box;
+    display: grid;
+    padding: 48px 70px;
+    place-items: center;
+    background: #fff;
+}
+
+.hmdp-login-form { box-sizing: border-box; width: min(100%, 420px); }
+.login-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #8b919c;
+    font-size: 13px;
+    cursor: pointer;
+    transition: color .2s ease;
+}
+.login-back:hover { color: #ff6633; }
+.login-heading { margin: 30px 0 26px; }
+.login-heading__badge {
+    display: inline-flex;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #fff1ec;
+    color: #ff6633;
+    font-size: 12px;
+    font-weight: 700;
+}
+.hmdp-login-form h2 { margin: 12px 0 8px; color: #1f2329; font-size: 30px; line-height: 1.25; }
+.login-subtitle { margin: 0; color: #8b919c; font-size: 14px; line-height: 1.6; }
+
+.hmdp-login-mode-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    margin-bottom: 26px;
+    padding: 4px;
+    border-radius: 12px;
+    background: #f4f5f7;
+}
+.hmdp-login-mode-tabs a {
+    padding: 10px;
+    border-radius: 9px;
+    color: #717784;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+.hmdp-login-mode-tabs a.is-active {
+    background: #fff;
+    color: #ff6633;
+    box-shadow: 0 4px 14px rgba(31, 35, 41, .08);
+}
+
+.login-field { margin-bottom: 19px; }
+.login-field > label,
+.login-field__header label {
+    display: block;
+    margin-bottom: 8px;
+    color: #343941;
+    font-size: 13px;
+    font-weight: 700;
+}
+.login-field__header { display: flex; align-items: center; justify-content: space-between; }
+.login-field__header a,
+.login-consent a { color: #ff6633; text-decoration: none; }
+.login-field__header a { margin-bottom: 8px; font-size: 12px; }
+
+.hmdp-login-form .el-input__inner {
+    height: 50px;
+    padding-left: 42px;
+    border-color: #e3e6eb;
+    border-radius: 12px;
+    background: #fafbfc;
+    transition: all .2s ease;
+}
+.hmdp-login-form .el-input__inner:hover { border-color: #c9cdd4; }
+.hmdp-login-form .el-input__inner:focus {
+    border-color: #ff6633;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(255, 102, 51, .1);
+}
+.hmdp-login-form .el-input__prefix { left: 14px; color: #9aa0aa; font-size: 17px; }
+.login-phone-row { display: grid; grid-template-columns: minmax(0, 1fr) 132px; gap: 10px; }
+.login-code-button {
+    height: 50px;
+    padding: 0 12px;
+    border-color: #ffd6c8;
+    border-radius: 12px;
+    background: #fff7f4;
+    color: #ff6633;
+}
+.login-code-button:hover,
+.login-code-button:focus { border-color: #ff6633; background: #fff1ec; color: #ff5522; }
+
+.login-consent {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin: 4px 0 18px;
+    color: #8b919c;
+    font-size: 12px;
+    line-height: 18px;
+    cursor: pointer;
+}
+.login-consent input { position: absolute; opacity: 0; pointer-events: none; }
+.login-consent__check {
+    box-sizing: border-box;
+    display: grid;
+    flex: 0 0 17px;
+    height: 17px;
+    margin-top: 1px;
+    border: 1px solid #c9cdd4;
+    border-radius: 5px;
+    place-items: center;
+    background: #fff;
+    color: transparent;
+    font-size: 11px;
+    transition: all .2s ease;
+}
+.login-consent input:checked + .login-consent__check { border-color: #ff6633; background: #ff6633; color: #fff; }
+
+.login-submit {
+    width: 100%;
+    height: 50px;
+    margin: 0;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(255, 102, 51, .22);
+}
+.login-tip { margin: 16px 0 0; color: #a3a8b1; font-size: 12px; text-align: center; }
+.login-tip i { margin-right: 4px; }
+
+@media (max-width: 1023px) {
+    .hmdp-login-layout { padding: 30px 20px; }
+    .hmdp-login-card { grid-template-columns: minmax(300px, 40%) minmax(0, 60%); }
+    .hmdp-login-brand { padding: 46px 36px 36px; }
+    .hmdp-login-brand h1 { margin-top: 38px; font-size: 38px; }
+    .hmdp-login-panel { padding: 42px; }
+}
+
+@media (max-width: 767px) {
+    .hmdp-login-layout { min-height: 100vh; display: block; padding: 0; background: #fff; }
+    .hmdp-login-card { min-height: 100vh; display: block; border: 0; border-radius: 0; box-shadow: none; }
+    .hmdp-login-brand { display: none; }
+    .hmdp-login-panel { min-height: 100vh; display: block; padding: 24px 20px 96px; }
+    .hmdp-login-form { width: 100%; max-width: none; }
+    .login-heading { margin: 36px 0 28px; }
+    .hmdp-login-form h2 { font-size: 28px; }
+    .login-phone-row { grid-template-columns: minmax(0, 1fr) 118px; }
+}
+
+@media (max-width: 380px) {
+    .hmdp-login-panel { padding-right: 16px; padding-left: 16px; }
+    .login-phone-row { grid-template-columns: 1fr; }
+    .login-code-button { width: 100%; }
+}

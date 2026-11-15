@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/blog-edit.css" rel="stylesheet">
+
+  <style type="text/css">
+
+  </style>
+    <link rel="stylesheet" href="./css/desktop.css">
+    <link rel="stylesheet" href="./css/components.css">
+</head>
+<body>
+<div id="app">
+    <hmdp-header active="publish"></hmdp-header>
+  <div class="editor-mobile-bar"><button @click="goBack"><i class="el-icon-arrow-left"></i></button><strong>发布笔记</strong><span></span></div>
+  <main class="hmdp-container hmdp-shell editor-shell">
+    <section class="hmdp-editor-card">
+      <div class="editor-heading"><div><h1>分享你的探店体验</h1><p>真实、具体的内容更容易帮助其他用户选店。</p></div><el-button class="hmdp-button-primary" :loading="submitting" @click="submitBlog">发布笔记</el-button></div>
+
+      <div class="editor-field"><label>笔记标题</label><el-input v-model="params.title" maxlength="64" show-word-limit placeholder="用一句话概括这次体验"></el-input></div>
+      <div class="editor-field"><label>探店正文</label><el-input type="textarea" :rows="10" v-model="params.content" maxlength="2000" show-word-limit placeholder="说说环境、菜品、服务和你最推荐的特色"></el-input></div>
+      <div class="editor-field"><label>关联店铺</label><button class="shop-picker" type="button" @click="showDialog=true"><span>{{selectedShop.name || '选择本次探店的店铺'}}</span><i class="el-icon-arrow-right"></i></button></div>
+      <div class="editor-field"><label>图片</label><p class="field-help">支持上传多张现场照片，第一张将作为封面。</p>
+        <input type="file" accept="image/*" @change="fileSelected" name="file" ref="fileInput" style="display:none">
+        <div class="upload-box">
+          <button class="upload-btn" type="button" :disabled="uploading" @click="openFileDialog"><i :class="uploading ? 'el-icon-loading' : 'el-icon-camera'"></i><span>{{uploading ? '上传中' : '上传照片'}}</span></button>
+          <div class="pic-list"><div class="pic-box" v-for="(f,i) in fileList" :key="i"><img @error="useFallbackImage" :src="f" alt="已上传图片"><button type="button" @click="deletePic(i)"><i class="el-icon-close"></i></button></div></div>
+        </div>
+      </div>
+      <div class="editor-mobile-submit"><el-button class="hmdp-button-primary" :loading="submitting" @click="submitBlog">发布笔记</el-button></div>
+    </section>
+  </main>
+
+  <div class="mask" v-show="showDialog" @click="showDialog=false"></div>
+  <transition name="el-zoom-in-bottom">
+    <div class="shop-dialog hmdp-card" v-show="showDialog">
+      <div class="dialog-heading"><strong>选择关联店铺</strong><button @click="showDialog=false"><i class="el-icon-close"></i></button></div>
+      <div class="search-bar"><el-input v-model="shopName" placeholder="搜索商户名称" @keyup.enter.native="queryShops"><el-button slot="append" icon="el-icon-search" @click="queryShops"></el-button></el-input></div>
+      <div class="shop-list"><button v-for="s in shops" :key="s.id" class="shop-item" @click="selectShop(s)"><strong>{{s.name}}</strong><span>{{s.area || s.address}}</span></button><div class="hmdp-empty" v-if="shops.length === 0">没有找到店铺</div></div>
+    </div>
+  </transition>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/header.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+
+  const app = new Vue({
+    el: "#app",
+    data() {
+      return {
+        util,
+        fileList: [], // 文件列表
+        params: {},
+        showDialog: false, //
+        shops: [], // 商户信息
+        shopName: "", //商户名称
+        selectedShop: {}, // 选中的商户
+        submitting: false,
+        uploading: false,
+      }
+    },
+    created() {
+      this.checkLogin();
+      this.queryShops();
+    },
+    methods: {
+      queryShops() {
+        axios.get("/shop/of/name?name=" + this.shopName)
+          .then(({data}) => this.shops = data)
+          .catch(err => this.$message.error(err))
+      },
+      selectShop(s) {
+        this.selectedShop = s;
+        this.showDialog = false;
+      },
+      submitBlog() {
+        if (this.submitting) return;
+        if (!this.params.title || !this.params.content) {
+          this.$message.warning("请填写标题和正文");
+          return;
+        }
+        if (!this.selectedShop.id) {
+          this.$message.warning("请选择关联店铺");
+          return;
+        }
+        let {...data} = this.params;
+        data.images = this.fileList.join(",");
+        data.shopId = this.selectedShop.id;
+        this.submitting = true;
+        axios.post("/blog", data)
+          .then(resp => location.href = "/info.html")
+          .catch(err => this.$message.error(err))
+          .finally(() => this.submitting = false)
+      },
+      openFileDialog() {
+        this.$refs.fileInput.click();
+      },
+      fileSelected() {
+        let file = this.$refs.fileInput.files[0];
+        if (!file) return;
+        let formData = new FormData();
+        formData.append("file", file);
+        const config = {
+          headers: {"Content-Type": "multipart/form-data;boundary=" + new Date().getTime()}
+        };
+        this.uploading = true;
+        axios
+          .post("/upload/blog", formData, config)
+          .then(({data}) => this.fileList.push('/imgs' + data))
+          .catch(err => this.$message.error(err))
+          .finally(() => {
+            this.uploading = false;
+            this.$refs.fileInput.value = "";
+          });
+      },
+      deletePic(i) {
+        axios.get("/upload/blog/delete?name=" + this.fileList[i])
+          .then(() => this.fileList.splice(i, 1))
+          .catch(err => this.$message.error(err))
+      },
+      checkLogin() {
+        // 获取token
+        let token = sessionStorage.getItem("token");
+        if (!token) {
+          location.href = "/login.html"
+        }
+        // 查询用户信息
+        axios.get("/user/me")
+          .then()
+          .catch(err => {
+            this.$message.error(err);
+            setTimeout(() => location.href = "/login.html", 200)
+          })
+      },
+      goBack() {
+        history.back();
+      },
+      handleRemove(file) {
+        console.log(file);
+      }
+    },
+
+  })
+</script>
+</body>
+</html>

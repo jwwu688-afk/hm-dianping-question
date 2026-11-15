@@ -20,6 +20,24 @@
         <maven.compiler.release>17</maven.compiler.release>
     </properties>
     <dependencies>
+        <!-- 异步链路测试用轮询断言等待处理完成，避免依赖固定睡眠猜测消费时间；不进入生产依赖。 -->
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- JUnit 集成测试启动一次性 Redis/RabbitMQ 容器，不使用应用配置中的真实业务服务。 -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>1.19.8</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- RabbitTemplate、RabbitListener、JSON 转换及监听容器；版本由 Spring Boot 2.7.18 管理。 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -88,6 +106,35 @@
         </dependency>
     </dependencies>
 
+    <!-- 安全验证入口：mvn -Pintegration-test clean verify，执行单元测试及隔离容器 IT。 -->
+    <profiles>
+        <profile>
+            <id>integration-test</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- 原演示测试会访问业务 Redis/完整应用，隔离验证时排除，避免修改真实库存或缓存。 -->
+                            <excludes>
+                                <exclude>**/HmDianPingApplicationTests.java</exclude>
+                                <exclude>**/RedissonTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                    <!-- Failsafe 在 integration-test/verify 阶段运行 *IT，测试失败会使 verify 失败。 -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution><goals><goal>integration-test</goal><goal>verify</goal></goals></execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <build>
         <plugins>
             <plugin>

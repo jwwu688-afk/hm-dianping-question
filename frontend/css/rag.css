@@ -1,0 +1,123 @@
+.rag-mobile-header, .rag-mobile-tabs { display: none; }
+.rag-content { max-width: 1200px; }
+.hero { position: relative; display: flex; align-items: center; gap: 14px; margin-bottom: 22px; padding: 22px 26px; overflow: hidden; border-radius: 14px; background: linear-gradient(135deg, #ff7a45, #ff4d2e); color: #fff; box-shadow: 0 8px 22px rgba(255,102,51,.2); }
+.hero::after { position: absolute; right: -50px; bottom: -90px; width: 240px; height: 240px; border-radius: 50%; background: rgba(255,255,255,.1); content: ""; }
+.hero-icon { display: grid; flex: none; width: 52px; height: 52px; border-radius: 50%; place-items: center; background: rgba(255,255,255,.2); font-size: 27px; }
+.hero h1 { margin: 0 0 5px; font-size: 23px; }
+.hero p { margin: 0; opacity: .9; }
+.hero-badge { z-index: 1; margin-left: auto; padding: 8px 12px; border-radius: 16px; background: rgba(255,255,255,.18); white-space: nowrap; }
+/* 布局：工作区固定为「一屏高度」，两栏各自内部滚动 —— 整页不出现下滑。
+   290px = 顶部导航 64 + 外壳上下内边距 24/48 + 顶部横幅(含下边距)约 126 + 约 30px 余量，
+   余量留给横幅里文字换行：宁可底部空一点，也不要冒出滚动条。
+   另外 .hmdp-shell 自带 min-height:calc(100vh - 64px)，所以整页高度正好等于一屏。 */
+.hmdp-rag-workspace { display: grid; grid-template-columns: minmax(330px, .86fr) minmax(0, 1.14fr); gap: 22px; height: calc(100vh - 290px); min-height: 440px; align-items: stretch; }
+.rag-documents-column, .rag-ask-column { display: flex; flex-direction: column; gap: 16px; min-width: 0; min-height: 0; }
+.upload-panel { flex: none; display: flex; flex-direction: column; }
+/* 左栏第 1 行以下的全部内容（已选文件 + 本次导入任务）都装进这个容器，超出时容器内部滚动 */
+.rag-documents-rest { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: grid; align-content: start; gap: 16px; }
+.chat-panel { flex: 1 1 auto; min-height: 0; }
+.panel { box-sizing: border-box; padding: 22px; border: 1px solid #ebeef5; border-radius: 12px; background: #fff; box-shadow: 0 4px 16px rgba(31,35,41,.04); }
+.panel label { display: block; margin: 15px 0 7px; font-weight: 700; }
+.panel-hint, .shortcut { color: #909399; font-size: 12px; }
+.panel-hint { margin: 8px 0 14px; line-height: 1.65; }
+.section-title, .section-title-row { font-size: 17px; font-weight: 700; }
+.section-title-row { display: flex; align-items: center; justify-content: space-between; }
+.section-title i { margin-right: 5px; color: #ff6633; }
+.primary-action { width: 100%; margin-top: 17px; }
+.shortcut { margin: 8px 0 0; text-align: center; }
+/* 真正的 <input type="file"> 必须隐藏：只保留上方图标区作为唯一入口。
+   （这条规则曾漏写，导致浏览器原生的「选择文件」按钮一直露在外面） */
+.file-input-hidden { display: none !important; }
+/* 文件选择区：整块可点、只放一个图标（不拉伸、不占多余高度） */
+.upload-zone { display: grid; flex: 1 1 auto; min-height: 150px; margin-top: 4px; place-items: center; align-content: center; gap: 9px; padding: 18px; border: 1px dashed #d3d7de; border-radius: 9px; background: #fafcff; color: #8c939d; cursor: pointer; text-align: center; transition: border-color .2s, background .2s, color .2s; }
+.upload-zone:hover, .upload-zone.is-picked { border-color: #ff6633; background: #fff8f4; color: #c4471f; }
+.upload-zone i { font-size: 42px; }
+/* 已选文件清单：单独一张卡片，位于上传卡片下方（即「选好文件后点上方按钮开始解析」那行的下面） */
+.picked-panel { padding: 14px 16px; }
+.picked-list { display: grid; gap: 6px; max-height: 116px; overflow-y: auto; }
+.picked-row { display: flex; align-items: center; gap: 8px; padding: 5px 6px 5px 10px; border: 1px solid #ebeef5; border-radius: 7px; background: #fafafa; text-align: left; }
+.picked-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: #606266; }
+.picked-remove { flex: none; padding: 2px 8px; border: 1px solid #e4e7ed; border-radius: 10px; background: #fff; color: #909399; font-size: 12px; cursor: pointer; }
+.picked-remove:hover { border-color: #ff6633; background: #fff8f4; color: #c4471f; }
+.empty { padding: 30px 0; color: #909399; text-align: center; }
+.rag-task-list { display: grid; gap: 12px; margin-top: 14px; }
+.rag-task-card { padding: 14px; border: 1px solid #ebeef5; border-radius: 9px; background: #fafafa; }
+.rag-task-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.rag-task-heading strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rag-task-card small { display: block; margin-top: 6px; color: #909399; overflow-wrap: anywhere; }
+/* .rag-task-status 已废弃：任务卡的状态改由 rag-progress 组件统一显示（见上方 .rag-progress） */
+/* 任务卡右上角：状态徽标 + 移除按钮 */
+.rag-task-actions { display: flex; flex: none; align-items: center; gap: 8px; }
+.rag-task-remove { flex: none; padding: 3px 9px; border: 1px solid #e4e7ed; border-radius: 12px; background: #fff; color: #909399; font-size: 12px; cursor: pointer; }
+.rag-task-remove:hover { border-color: #ff6633; background: #fff8f4; color: #c4471f; }
+/* 进度显示：上传和提问共用同一个 Vue 组件（#rag-progress-template），样式也共用这一套 */
+.rag-progress { margin-top: 12px; padding: 12px; border: 1px solid #ebeef5; border-radius: 8px; background: #fff; }
+.rag-progress-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.rag-progress-status { font-size: 13px; font-weight: 700; color: #606266; }
+.rag-progress.is-done .rag-progress-status { color: #2d7a20; }
+.rag-progress.is-failed .rag-progress-status { color: #b42318; }
+.rag-progress-percent { color: #909399; font-size: 12px; font-variant-numeric: tabular-nums; }
+.rag-progress-track { height: 6px; margin-top: 8px; border-radius: 3px; background: #eef0f3; overflow: hidden; }
+.rag-progress-fill { display: block; height: 100%; width: 0; border-radius: 3px; background: #ff6633; transition: width .35s ease; }
+.rag-progress.is-done .rag-progress-fill { background: #67c23a; }
+.rag-progress.is-failed .rag-progress-fill { background: #f56c6c; }
+.rag-progress-steps { display: grid; gap: 4px; margin-top: 10px; }
+.rag-progress-steps .rag-progress-node { margin-top: 0; }
+.rag-progress-node { margin-top: 8px; padding: 7px 9px; border-radius: 6px; font-size: 13px; overflow-wrap: anywhere; }
+.rag-progress-node.is-done { background: #f0f9eb; color: #2d6723; }
+.rag-progress-node.is-running, .rag-progress-node.is-waiting { background: #fff8e8; color: #855600; }
+.chat-compose textarea { resize: vertical; }
+.question-examples { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.question-examples span { align-self: center; color: #909399; font-size: 12px; }
+.question-examples button { padding: 5px 9px; border: 0; border-radius: 12px; background: #fff1eb; color: #c4471f; cursor: pointer; }
+.stream-option { font-size: 13px; font-weight: 400 !important; }
+.stream-option input { margin-right: 5px; }
+/* ---- 聊天窗口（右侧）：高度由所在栏撑满（一屏内），消息区内部滚动 ---- */
+.chat-panel { display: flex; flex-direction: column; }
+.chat-scroll { display: flex; flex: 1 1 auto; min-height: 100px; flex-direction: column; gap: 12px; margin-top: 14px; padding: 12px; overflow-y: auto; border: 1px solid #ebeef5; border-radius: 10px; background: #fafbfc; }
+.chat-empty { margin: auto; padding: 24px; color: #909399; text-align: center; }
+.chat-empty p { max-width: 340px; margin: 0 auto; font-size: 13px; line-height: 1.7; }
+/* 系统头像 + 名字：对外呈现的助手身份 */
+.chat-avatar { display: grid; width: 46px; height: 46px; margin: 0 auto 12px; border-radius: 50%; place-items: center; background: #ff6633; color: #fff; font-size: 18px; font-weight: 700; }
+.chat-row { display: flex; }
+.chat-row.is-user { justify-content: flex-end; }
+.chat-item { max-width: 88%; }
+.chat-name { display: block; margin: 0 0 5px 2px; color: #ff6633; font-size: 12px; font-weight: 700; }
+.chat-bubble { padding: 11px 13px; border: 1px solid #ebeef5; border-radius: 12px; background: #fff; font-size: 14px; line-height: 1.75; }
+.chat-row.is-user .chat-bubble { border-color: #ffd9c9; background: #fff3ec; }
+.chat-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.chat-error { margin-top: 8px; padding: 8px 10px; border-radius: 6px; background: #fff1f0; color: #b42318; }
+.chat-bubble .rag-progress { margin-top: 0; }
+.chat-bubble .rag-progress + .chat-text { margin-top: 10px; }
+.chat-compose { flex: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid #ebeef5; }
+.chat-compose .question-examples { margin-top: 0; }
+.chat-compose .primary-action { margin-top: 14px; }
+.answer-images { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.answer-images img { width: 100%; max-height: 230px; border-radius: 8px; object-fit: cover; }
+@media (max-width: 1023px) {
+  .hmdp-rag-workspace { grid-template-columns: minmax(290px, .85fr) minmax(0, 1.15fr); gap: 16px; }
+  .panel { padding: 18px; }
+  .hero-badge { display: none; }
+}
+@media (max-width: 767px) {
+  .rag-mobile-header { display: flex; height: 52px; align-items: center; justify-content: space-between; padding: 0 8px; background: #fff; border-bottom: 1px solid #ebeef5; }
+  .rag-mobile-header button, .rag-mobile-header span { width: 38px; border: 0; background: transparent; color: #ff6633; font-size: 18px; }
+  .hero { margin-bottom: 12px; padding: 15px; border-radius: 10px; }
+  .hero-icon { width: 43px; height: 43px; font-size: 23px; }
+  .hero h1 { font-size: 18px; }
+  .hero p { font-size: 12px; line-height: 1.5; }
+  .rag-mobile-tabs { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 12px; padding: 3px; border-radius: 9px; background: #e9ebee; }
+  .rag-mobile-tabs button { padding: 9px; border: 0; border-radius: 7px; background: transparent; color: #606266; }
+  .rag-mobile-tabs button.is-active { background: #fff; color: #c4471f; box-shadow: 0 1px 5px rgba(31,35,41,.08); }
+  /* 窄屏：恢复正常文档流（允许上下滚动），不再强制一屏 */
+  .hmdp-rag-workspace { display: block; height: auto; min-height: 0; }
+  .rag-documents-column, .rag-ask-column { display: none; }
+  .rag-documents-column.is-mobile-active, .rag-ask-column.is-mobile-active { display: flex; flex-direction: column; gap: 16px; }
+  .rag-documents-rest { flex: none; overflow: visible; }
+  .upload-zone { min-height: 120px; }
+  /* 移动端聊天窗口仍限高，避免被消息撑得很长 */
+  .chat-panel { flex: none; height: calc(100vh - 330px); min-height: 400px; }
+  .chat-scroll { min-height: 150px; }
+  .panel { padding: 16px; border-radius: 9px; }
+  .answer-images { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,183 @@
+# 黑马点评（hmdp）本地依赖容器，一个 compose 分组管理全部中间件
+#
+# 用法：
+#   docker compose up -d        # 启动全部（或 Docker Desktop 的 Containers 页面点击 hmdp 分组上的启动按钮）
+#   docker compose stop         # 停止，保留容器
+#   docker compose down         # 删除容器（./data 下的数据仍保留）
+#   docker compose logs -f      # 看日志
+#
+# 服务与项目配置对应关系：
+#   Java 后端（application.yaml）
+#     MySQL    127.0.0.1:3306  root/123456      库 hmdp
+#     Redis    127.0.0.1:6379  密码 123456
+#     RabbitMQ 127.0.0.1:5672  root/123456      控制台 :15672
+#   Python RAG 服务（services/shop-qa/.env）
+#     Milvus   127.0.0.1:19530 集合 hmdp_knowledge_v2 / hmdp_shop_qa
+#     MinIO    127.0.0.1:9000  admin/MyPassword123，桶 knowledge-base-files
+#     MongoDB  127.0.0.1:27017 库 kb002（会话历史）
+name: hmdp
+
+services:
+  # ───────────────────────── Java 后端依赖 ─────────────────────────
+  mysql:
+    # 必须钉 8.0：./data/mysql 是本机原 mysql8(8.0.46) 容器的数据文件，
+    # 用 mysql:8（现为 8.4）会拒绝启动 8.0 的数据目录。
+    image: mysql:8.0
+    container_name: hmdp-mysql
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+      MYSQL_DATABASE: hmdp
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d:ro   # 仅在 data/mysql 为空时执行
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p123456"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+
+  redis:
+    image: redis:6.2.6
+    container_name: hmdp-redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "123456", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "123456", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  rabbitmq:
+    image: rabbitmq:3.8-management
+    container_name: hmdp-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: root
+      RABBITMQ_DEFAULT_PASS: "123456"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./data/rabbitmq:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  # ───────────────────── Python RAG 服务依赖 ─────────────────────
+  # Milvus 单机版三件套：etcd(元数据) + milvus-minio(对象存储) + standalone(向量库)
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    container_name: hmdp-etcd
+    restart: unless-stopped
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - ./data/milvus-etcd:/etcd
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls=http://0.0.0.0:2379 --data-dir /etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  milvus-minio:
+    # Milvus 专用的内部对象存储，别和下面的 hmdp-minio（文档/图片）混用
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    container_name: hmdp-milvus-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    volumes:
+      - ./data/milvus-minio:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  milvus:
+    image: milvusdb/milvus:v2.4.11
+    container_name: hmdp-milvus
+    restart: unless-stopped
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: milvus-minio:9000
+    volumes:
+      - ./data/milvus:/var/lib/milvus
+    ports:
+      - "19530:19530"   # pymilvus 连接口
+      - "9091:9091"     # 健康检查 / 指标
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 5
+    depends_on:
+      etcd:
+        condition: service_healthy
+      milvus-minio:
+        condition: service_healthy
+
+  # 上传文档的原件/图片存储，对应 shop-qa .env 的 MINIO_ENDPOINT=localhost:9000
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    container_name: hmdp-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: MyPassword123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./data/minio:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # 问答会话历史，对应 shop-qa .env 的 MONGO_URL 与 MONGO_DB_NAME=kb002
+  mongo:
+    # 数据卷是 8.3 格式（原 mongo:latest = 8.3.8），钉 8.3 防止 latest 升到更高大版本后拒绝启动
+    image: mongo:8.3
+    container_name: hmdp-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongo:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s

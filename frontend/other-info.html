@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/info.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="./css/desktop.css">
+    <link rel="stylesheet" href="./css/components.css">
+</head>
+
+<body>
+<div id="app">
+    <hmdp-header active="profile"></hmdp-header>
+  <div class="profile-mobile-bar"><button @click="goBack"><i class="el-icon-arrow-left"></i></button><strong>用户主页</strong><span></span></div>
+  <main class="hmdp-container hmdp-shell">
+    <div class="hmdp-profile-layout">
+      <aside class="hmdp-profile-card">
+        <div class="profile-card__accent"><span>城市体验官</span></div>
+        <div class="profile-card__body">
+          <div class="profile-card__identity">
+            <div class="profile-avatar-shell"><img @error="useFallbackImage" :src="user.icon || '/imgs/icons/default-icon.png'" alt="头像"><i class="el-icon-check"></i></div>
+            <div class="profile-card__copy"><span class="profile-eyebrow">黑马点评用户</span><h1>{{user.nickName || '黑马用户'}}</h1><span class="profile-location"><i class="el-icon-location-outline"></i> {{info.city || '城市未填写'}}</span><p>{{info.introduce || '这个人很低调，还没有填写个人简介。'}}</p></div>
+          </div>
+          <div class="profile-card__side">
+            <div class="profile-stats"><div><strong>{{info.followee || 0}}</strong><span>关注</span></div><div><strong>{{info.fans || 0}}</strong><span>粉丝</span></div><div><strong>{{blogs.length}}</strong><span>笔记</span></div></div>
+            <div class="profile-actions profile-actions--single"><el-button class="hmdp-button-primary" @click="follow">{{followed ? '取消关注' : '+ 关注'}}</el-button></div>
+          </div>
+        </div>
+      </aside>
+      <section class="hmdp-profile-content">
+        <div class="profile-content-heading"><div><span>DISCOVER</span><h2>TA 的生活记录</h2><p>从真实分享里，发现更多值得去的好地方。</p></div></div>
+        <el-tabs v-model="activeName" @tab-click="handleClick">
+          <el-tab-pane label="TA 的笔记" name="1"><div class="profile-blog-grid"><article v-for="b in blogs" :key="b.id" class="profile-blog-card hmdp-card" @click="toBlogDetail(b)"><div class="profile-blog-cover"><img @error="useFallbackImage" :src="firstImage(b.images)" alt="笔记封面"><span>生活笔记</span></div><div class="profile-blog-card__body"><strong class="hmdp-line-clamp-2">{{b.title}}</strong><span>{{b.liked || 0}} 赞 · {{b.comments || 0}} 评论</span></div></article></div><div class="hmdp-empty" v-if="blogs.length === 0">TA 还没有发布笔记</div></el-tab-pane>
+          <el-tab-pane label="共同关注" name="2"><div class="profile-follow-list"><button v-for="u in commonFollows" :key="u.id" @click="toOtherInfo(u.id)"><img @error="useFallbackImage" :src="u.icon || '/imgs/icons/default-icon.png'" alt="头像"><strong>{{u.nickName}}</strong><span>去主页看看</span></button></div><div class="hmdp-empty" v-if="commonFollows.length === 0">暂无共同关注</div></el-tab-pane>
+        </el-tabs>
+      </section>
+    </div>
+  </main>
+  <foot-bar :active-btn="-1"></foot-bar>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/header.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      util,
+      user: "",
+      loginUser: {},
+      activeName: "1",
+      info: {},
+      blogs: [],
+      followed: false, // 是否关注了
+      commonFollows: [], // 共同关注
+    },
+    created() {
+      this.queryUser();
+      this.queryLoginUser();
+    },
+    methods: {
+      queryBlogs() {
+        axios.get("/blog/of/user", {
+            params: {id: this.user.id, current: 1}
+          })
+          .then(({data}) => this.blogs = data || [])
+          .catch(err => this.$message.error(err))
+      },
+      queryLoginUser() {
+        // 查询用户信息
+        axios.get("/user/me")
+          .then(({data}) => {
+            // 保存用户
+            this.loginUser = data;
+          })
+          .catch(console.log)
+      },
+      queryUser() {
+        // 查询用户信息
+        let id = util.getUrlParam("id")
+        axios.get("/user/" + id)
+          .then(({data}) => {
+            // 保存用户
+            this.user = data;
+            // 查询用户详情
+            this.queryUserInfo();
+            // 查询用户笔记
+            this.queryBlogs();
+            // 是否被关注
+            this.isFollowed();
+          })
+          .catch(console.log)
+      },
+      goBack() {
+        history.back();
+      },
+      queryUserInfo(id) {
+        axios.get("/user/info/" + this.user.id)
+          .then(({data}) => {
+            if (!data) {
+              return
+            }
+            // 保存用户详情
+            this.info = data;
+            // 保存到本地
+            sessionStorage.setItem("userInfo", JSON.stringify(data))
+          })
+          .catch(err => {
+            this.$message.error(err);
+          })
+      },
+      isFollowed(){
+        axios.get("/follow/or/not/" + this.user.id)
+          .then(({data}) => this.followed = data)
+          .catch(this.$message.error)
+      },
+      queryCommonFollow() {
+        axios.get("/follow/common/" + this.user.id)
+          .then(({data}) => this.commonFollows = data)
+          .catch(err => {
+            this.$message.error(err);
+          })
+      },
+      follow() {
+        if (!token) {
+          location.href = "/login.html";
+          return;
+        }
+        axios.put("/follow/" + this.user.id + "/" + !this.followed)
+          .then(() => {
+            this.$message.success(this.followed ? "已取消关注" : "已关注")
+            this.followed = !this.followed
+          })
+          .catch(err => this.$message.error(err))
+      },
+      handleClick(t) {
+        if (t.name === '2') {
+          this.queryCommonFollow();
+        }
+      },
+      toOtherInfo(id){
+        location.href = "/other-info.html?id=" + id
+      },
+      firstImage(images) {
+        return (images || "").split(",")[0] || "/imgs/icons/default-icon.png";
+      },
+      toBlogDetail(blog) {
+        location.href = "/blog-detail.html?id=" + blog.id;
+      }
+    },
+
+  })
+</script>
+</body>
+
+</html>

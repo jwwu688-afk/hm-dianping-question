@@ -1,0 +1,7 @@
+<!-- 测试日志保留 WARN/ERROR，减少容器和网络调试输出；不覆盖生产 application.yaml 日志配置。 -->
+<configuration>
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder><pattern>%level %logger{32} - %msg%n</pattern></encoder>
+  </appender>
+  <root level="WARN"><appender-ref ref="CONSOLE"/></root>
+</configuration>

@@ -52,7 +52,9 @@ public class CacheClient {
             // 3.存在，直接返回
             return JSONUtil.toBean(json, type);
         }
+
         // 判断命中的是否是空值
+        // 查到的是一个空字符串 "",这是之前特意写入的“该数据不存在”的标记，直接返回 null,不再查数据库。
         if (json != null) {
             // 返回一个错误信息
             return null;

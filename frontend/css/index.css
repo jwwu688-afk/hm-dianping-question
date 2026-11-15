@@ -1,0 +1,65 @@
+.search-bar { display: none; }
+
+.hmdp-home-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 24px;
+    align-items: start;
+}
+
+.hmdp-home-main { min-width: 0; }
+
+.type-list {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 18px 12px 10px;
+}
+
+.type-box { min-width: 0; padding: 7px; text-align: center; cursor: pointer; }
+.type-view { width: 54px; height: 54px; margin: 0 auto 7px; overflow: hidden; border-radius: 16px; background: #fff4ef; }
+.type-view img { width: 100%; height: 100%; object-fit: cover; }
+.type-text { color: #303133; font-size: 13px; }
+
+.home-section-title { display: flex; align-items: end; justify-content: space-between; margin: 26px 2px 14px; }
+.home-section-title strong { margin-right: 12px; font-size: 22px; }
+.home-section-title span { color: #909399; font-size: 13px; }
+
+.blog-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.blog-box { min-width: 0; overflow: hidden; }
+.blog-img { cursor: pointer; }
+.blog-title { min-height: 44px; padding: 12px 14px 4px; font-size: 15px; font-weight: 600; line-height: 22px; }
+.blog-foot { display: flex; align-items: center; gap: 8px; padding: 10px 14px 14px; color: #909399; }
+.blog-user-icon { flex: none; width: 26px; height: 26px; }
+.blog-user-icon img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.blog-user-name { min-width: 0; flex: 1; }
+.blog-liked { flex: none; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
+.hmdp-home-sidebar { position: sticky; top: 88px; display: grid; gap: 16px; }
+.home-welcome { text-align: center; }
+.home-welcome__icon { display: grid; width: 52px; height: 52px; margin: 0 auto 10px; place-items: center; border-radius: 50%; background: #fff1eb; color: #ff6633; font-size: 24px; }
+.home-welcome h3, .home-recommend h3 { margin: 0 0 8px; }
+.home-welcome p { margin: 0 0 14px; color: #909399; font-size: 13px; line-height: 20px; }
+.home-recommend button { margin: 4px; padding: 7px 11px; border: 0; border-radius: 14px; background: #f5f7fa; color: #606266; cursor: pointer; }
+.home-ai { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.home-ai > i { color: #ff6633; font-size: 28px; }
+.home-ai strong, .home-ai span { display: block; }
+.home-ai span { margin-top: 4px; color: #909399; font-size: 12px; }
+
+@media (max-width: 1023px) {
+    .hmdp-home-grid { grid-template-columns: minmax(0, 1fr) 240px; gap: 16px; }
+}
+
+@media (max-width: 767px) {
+    .search-bar { display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 12px; background: #ff6633; color: #fff; }
+    .search-input { flex: 1; }
+    .hmdp-home-grid { display: block; }
+    .hmdp-home-sidebar { display: none; }
+    .type-list { grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 9px 2px 3px; }
+    .type-box { padding: 5px 2px; }
+    .type-view { width: 44px; height: 44px; border-radius: 13px; }
+    .type-text { font-size: 11px; }
+    .home-section-title { margin: 18px 2px 10px; }
+    .home-section-title strong { font-size: 18px; }
+    .home-section-title span { display: none; }
+    .blog-list { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+}

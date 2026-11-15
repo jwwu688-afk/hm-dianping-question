@@ -1,0 +1,198 @@
+加载金标集 golden_set.jsonl：30 条 query
+正在加载 BGE reranker（本地模型，首次加载较慢）...
+[32m2026-11-14 18:14:18.068[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:14:18.074[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mget_bge_m3_ef  [0m:[36m26  [0m - [1m开始初始化BGE-M3模型[0m
+[32m2026-11-14 18:14:21.896[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mget_bge_m3_ef  [0m:[36m44  [0m - [32m[1mBGE-M3模型初始化成功，已开启原生L2归一化[0m
+You're using a XLMRobertaTokenizerFast tokenizer. Please note that with a fast tokenizer, using the `__call__` method is faster than using a method to encode the text followed by a call to the `pad` method to get a padded encoding.
+[32m2026-11-14 18:14:23.470[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:14:23.634[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mget_milvus_client[0m:[36m27  [0m - [1mMilvus客户端连接成功[0m
+[32m2026-11-14 18:14:23.669[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:14:23.677[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:14:23.693[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+You're using a XLMRobertaTokenizerFast tokenizer. Please note that with a fast tokenizer, using the `__call__` method is faster than using a method to encode the text followed by a call to the `pad` method to get a padded encoding.
+[1/30] 完成: 帮我找一下 Milvus 测试文本的内容
+[32m2026-11-14 18:15:45.854[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:15:47.024[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:15:47.047[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:15:47.059[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:15:47.118[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[2/30] 完成: H3C LA2608 这款室内无线网关有官方用户手册吗？
+[32m2026-11-14 18:17:01.739[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:17:02.009[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:17:02.024[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:17:02.029[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:17:02.042[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[3/30] 完成: LA2608 的用户手册目录里都包含哪些章节？
+[32m2026-11-14 18:17:40.498[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:17:41.453[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:17:41.476[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:17:41.485[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:17:41.508[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[4/30] 完成: LA2608 怎么配置才能和无线控制器互通？
+[32m2026-11-14 18:18:11.912[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:18:12.117[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:18:12.130[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:18:12.136[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:18:12.146[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[5/30] 完成: 运营商那边的无线控制器需要按需调整什么配置？
+[32m2026-11-14 18:18:27.007[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:18:27.233[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:18:27.247[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:18:27.253[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:18:27.265[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[6/30] 完成: 怎么确认 LA2608 已经和无线控制器连通了？
+[32m2026-11-14 18:19:16.173[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:19:17.233[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:19:17.250[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:19:17.260[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:19:17.277[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[7/30] 完成: HAK 180 烫金机安全手册的文档编号是多少？
+[32m2026-11-14 18:20:04.759[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:20:05.711[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:20:05.742[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:20:05.750[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:20:05.770[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[8/30] 完成: 烫金机操作不当会有什么危险后果？
+[32m2026-11-14 18:21:24.867[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:21:25.919[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:21:25.944[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:21:25.954[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:21:25.974[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[9/30] 完成: 烫金机对供电电源有什么要求？能不能接直流电源？
+[32m2026-11-14 18:22:45.284[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:22:46.191[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:22:46.212[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:22:46.221[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:22:46.240[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[10/30] 完成: 烫金机应该放在什么样的地方使用？
+[32m2026-11-14 18:24:03.482[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:24:03.804[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:24:03.835[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:24:03.845[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:24:03.875[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[11/30] 完成: 搬烫金机的时候要注意什么？能抓进纸托板抬吗？
+[32m2026-11-14 18:24:49.215[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:24:49.451[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:24:49.468[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:24:49.473[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:24:49.489[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[12/30] 完成: 烫金机按说明操作还是不能正常运行怎么办？
+[32m2026-11-14 18:26:03.661[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:26:04.653[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:26:04.675[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:26:04.684[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:26:04.702[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[13/30] 完成: 烫金机产品里含有哪些有害物质？
+[32m2026-11-14 18:27:24.284[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:27:25.308[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:27:25.330[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:27:25.339[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:27:25.363[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[14/30] 完成: 华为擎云 B730 的用户指南里都讲了哪些内容？
+[32m2026-11-14 18:28:42.098[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:28:42.318[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:28:42.333[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:28:42.339[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:28:42.353[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[15/30] 完成: 华为 B730 电脑的外观和接口都在什么位置？
+[32m2026-11-14 18:29:54.919[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:29:55.956[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:29:55.983[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:29:55.994[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:29:56.021[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[16/30] 完成: B730 键盘上的 F1 F2 快捷键都是什么功能？
+[32m2026-11-14 18:31:15.501[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:31:16.490[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:31:16.514[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:31:16.523[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:31:16.542[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[17/30] 完成: 华为 B730 怎么用 F10 恢复出厂设置？
+[32m2026-11-14 18:32:35.785[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:32:36.752[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:32:36.772[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:32:36.783[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:32:36.803[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[18/30] 完成: 戴耳机听歌通话时怎么保护听力？
+[32m2026-11-14 18:33:55.820[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:33:56.814[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:33:56.836[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:33:56.844[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:33:56.863[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[19/30] 完成: 家里有小孩，电脑设备应该放在哪里防止误碰？
+[32m2026-11-14 18:34:59.748[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:35:00.018[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:35:00.038[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:35:00.046[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:35:00.064[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[20/30] 完成: 电脑换电池有什么安全风险？电池能放在高温处吗？
+[32m2026-11-14 18:36:08.594[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:36:09.611[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:36:09.636[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:36:09.648[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:36:09.667[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[21/30] 完成: B730 平时怎么维护保养？可以自己升级部件吗？
+[32m2026-11-14 18:37:30.388[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:37:31.367[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:37:31.389[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:37:31.399[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:37:31.421[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[22/30] 完成: 这台电脑的型号核准代码和认证信息在哪里查看？
+[32m2026-11-14 18:38:44.617[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:38:45.600[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:38:45.628[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:38:45.638[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:38:45.656[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[23/30] 完成: 用这台电脑怎么避免个人信息和数据泄露？
+[32m2026-11-14 18:40:06.137[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:40:07.127[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:40:07.150[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:40:07.157[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:40:07.207[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[24/30] 完成: B730 用户手册里的商标声明说了什么？
+[32m2026-11-14 18:41:27.505[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:41:28.545[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:41:28.567[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:41:28.577[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:41:28.599[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[25/30] 完成: 为什么我的电脑某些功能和特性用不了？是不是跟网络有关？
+[32m2026-11-14 18:42:48.720[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:42:49.717[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:42:49.739[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:42:49.747[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:42:49.764[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[26/30] 完成: 华为对用户手册的内容提供保证或保修吗？
+[32m2026-11-14 18:44:10.697[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:44:11.693[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:44:11.712[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:44:11.722[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:44:11.742[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[27/30] 完成: 想购买华为产品或了解更多信息应该去哪个网站？
+[32m2026-11-14 18:45:33.433[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:45:34.384[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:45:34.407[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:45:34.416[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:45:34.435[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[28/30] 完成: 北交大新生入学后校医院有什么安排和要求？
+[32m2026-11-14 18:46:54.839[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:46:55.828[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:46:55.851[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:46:55.860[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:46:55.881[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[29/30] 完成: 入学体检什么时候做？体检表去哪里领？
+[32m2026-11-14 18:48:16.636[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 18:48:17.636[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 18:48:17.659[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:48:17.667[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[32m2026-11-14 18:48:17.689[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[kb_chunks]共检索到10条结果[0m
+[30/30] 完成: 新生监护人委托书怎么填？需要写哪些信息？
+
+===== 评测结果摘要 =====
+dense_only               hit@1=0.833  hit@3=0.900  hit@5=0.900  recall@5=0.900  mrr@10=0.872  ndcg@5=0.871  p50=7ms p95=10ms
+sparse_only              hit@1=0.800  hit@3=0.900  hit@5=0.933  recall@5=0.933  mrr@10=0.858  ndcg@5=0.873  p50=5ms p95=7ms
+hybrid_w_50_50           hit@1=0.933  hit@3=0.967  hit@5=0.967  recall@5=0.967  mrr@10=0.950  ndcg@5=0.954  p50=9ms p95=13ms
+hybrid_w_80_20           hit@1=0.867  hit@3=0.933  hit@5=0.967  recall@5=0.967  mrr@10=0.907  ndcg@5=0.922  p50=9ms p95=11ms
+hybrid_rrf               hit@1=0.767  hit@3=0.967  hit@5=0.967  recall@5=0.967  mrr@10=0.861  ndcg@5=0.888  p50=10ms p95=15ms
+hybrid_w_80_20_rerank    hit@1=0.800  hit@3=0.933  hit@5=0.933  recall@5=0.933  mrr@10=0.866  ndcg@5=0.880  p50=79062ms p95=81354ms
+
+报告: D:\code\hm-dianping\services\shop-qa\scripts\eval\eval_out\comparison_report.md
+明细: D:\code\hm-dianping\services\shop-qa\scripts\eval\eval_out\results.csv

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+
+  <link href="./css/shop-list.css" rel="stylesheet">
+  <link href="./css/main.css" rel="stylesheet">
+
+  <style type="text/css">
+
+  </style>
+    <link rel="stylesheet" href="./css/desktop.css">
+    <link rel="stylesheet" href="./css/components.css">
+</head>
+<body>
+<div id="app">
+    <hmdp-header active="shops"></hmdp-header>
+  <div class="shop-mobile-header">
+    <button @click="goBack"><i class="el-icon-arrow-left"></i></button>
+    <strong>{{typeName || '发现店铺'}}</strong>
+    <button @click="filtersOpen = !filtersOpen"><i class="el-icon-s-operation"></i></button>
+  </div>
+  <main class="hmdp-container hmdp-shell">
+    <div class="shop-page-heading">
+      <div><h1>{{typeName || '发现店铺'}}</h1><p>按分类、距离和口碑找到适合你的店</p></div>
+      <el-button class="filter-toggle" @click="filtersOpen = !filtersOpen"><i class="el-icon-s-operation"></i> 筛选</el-button>
+    </div>
+    <div class="shop-location-status" :class="'is-' + locationMode">
+      <i :class="locationMode === 'locating' ? 'el-icon-loading' : 'el-icon-location-outline'"></i>
+      <span>{{locationLabel}}</span>
+      <button v-if="locationMode === 'fallback'" @click="requestLocation">重新定位</button>
+    </div>
+    <div class="shop-browser">
+      <aside class="shop-filters hmdp-card hmdp-card--padded" :class="{'is-open': filtersOpen}">
+        <h3>店铺分类</h3>
+        <button v-for="t in types" :key="t.id" :class="{'is-active': String(params.typeId) === String(t.id)}" @click="handleCommand(t)">{{t.name}}</button>
+        <h3>所在商圈</h3>
+        <div class="shop-area-options"><span class="is-active">全城</span><span>附近</span><span>热门商圈</span></div>
+        <h3>排序方式</h3>
+        <div class="shop-sort-options">
+          <button :class="{'is-active': params.sortBy === ''}" @click="sortAndQuery('')">距离优先</button>
+          <button :class="{'is-active': params.sortBy === 'comments'}" @click="sortAndQuery('comments')">人气优先</button>
+          <button :class="{'is-active': params.sortBy === 'score'}" @click="sortAndQuery('score')">评分优先</button>
+        </div>
+      </aside>
+      <section class="shop-results">
+        <div class="hmdp-shop-grid">
+          <article class="shop-box hmdp-card hmdp-card--interactive" v-for="s in visibleShops" :key="s.id" @click="toDetail(s.id)">
+            <div class="shop-img"><img class="hmdp-cover" @error="useFallbackImage" :src="s.images" alt="店铺图片"></div>
+            <div class="shop-info">
+              <div class="shop-title hmdp-line-clamp-2">{{s.name}}</div>
+              <div class="shop-rate"><el-rate disabled :value="s.score/10" text-color="#F63"></el-rate><span>{{s.comments || 0}}条</span></div>
+              <div class="shop-area"><span>{{s.area || '商圈待补充'}}</span><span class="shop-distance" v-if="s.distance !== undefined && s.distance !== null"><i class="el-icon-position"></i>{{formatDistance(s.distance)}}</span></div>
+              <div class="shop-avg">￥{{s.avgPrice || '--'}}/人</div>
+              <div class="shop-address"><i class="el-icon-map-location"></i><span>{{s.address || '地址待补充'}}</span></div>
+            </div>
+          </article>
+        </div>
+        <div class="hmdp-loading" v-if="loading"><i class="el-icon-loading"></i> 正在加载店铺</div>
+        <div class="hmdp-empty" v-if="!loading && visibleShops.length === 0">没有找到符合条件的店铺</div>
+        <div class="hmdp-empty" v-if="finished && visibleShops.length">已经展示全部店铺</div>
+      </section>
+    </div>
+  </main>
+  <foot-bar :active-btn="2"></foot-bar>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/header.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+
+  const app = new Vue({
+    el: "#app",
+    data: {
+      util,
+      isReachBottom: false,
+      types: [], // 类型列表
+      shops: [], // 商店列表
+      typeName: "",
+      keyword: "",
+      loading: false,
+      finished: false,
+      filtersOpen: false,
+      locationLabel: "正在获取位置…",
+      locationMode: "locating",
+      locationFallbackTried: false,
+      params:{
+        typeId: 0,
+        current: 1,
+        sortBy: "",
+        x: null,
+        y: null
+      }
+    },
+    created() {
+      // 获取参数
+      this.params.typeId = util.getUrlParam("type");
+      this.typeName = util.getUrlParam("name");
+      this.keyword = util.getUrlParam("keyword");
+      // 查询类型
+      this.queryTypes();
+      // 定位完成后再查询，后端才能通过 Redis GEO 返回距离并排序
+      this.requestLocation();
+    },
+    mounted() {
+      window.addEventListener("scroll", this.onScroll);
+    },
+    beforeDestroy() {
+      window.removeEventListener("scroll", this.onScroll);
+    },
+    computed: {
+      visibleShops() {
+        const keyword = (this.keyword || "").trim().toLowerCase();
+        const records = keyword
+          ? this.shops.filter(shop => [shop.name, shop.area, shop.address].some(value => String(value || "").toLowerCase().includes(keyword)))
+          : this.shops.slice();
+        if (this.params.sortBy === "comments") return records.sort((a, b) => (b.comments || 0) - (a.comments || 0));
+        if (this.params.sortBy === "score") return records.sort((a, b) => (b.score || 0) - (a.score || 0));
+        return records.sort((a, b) => (a.distance ?? Number.MAX_VALUE) - (b.distance ?? Number.MAX_VALUE));
+      }
+    },
+    methods: {
+      queryTypes() {
+        axios.get("/shop-type/list")
+          .then(({data}) => {
+            this.types = data;
+          })
+          .catch(err => {
+            console.log(err);
+            this.$message.error(err)
+          })
+      },
+      requestLocation() {
+        this.locationMode = "locating";
+        this.locationLabel = "正在获取位置，用于计算附近店铺距离…";
+        if (!navigator.geolocation) {
+          this.useFallbackLocation("浏览器不支持定位，当前按杭州中心显示参考距离");
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            this.params.x = position.coords.longitude;
+            this.params.y = position.coords.latitude;
+            this.locationMode = "current";
+            this.locationLabel = "已按你的位置由近到远排序";
+            this.locationFallbackTried = false;
+            this.resetAndQuery();
+          },
+          () => this.useFallbackLocation("未获得定位权限，当前按杭州中心显示参考距离"),
+          {enableHighAccuracy: true, timeout: 5000, maximumAge: 300000}
+        );
+      },
+      useFallbackLocation(message) {
+        this.params.x = 120.1551;
+        this.params.y = 30.2741;
+        this.locationMode = "fallback";
+        this.locationLabel = message;
+        this.resetAndQuery();
+      },
+      resetAndQuery() {
+        this.params.current = 1;
+        this.shops = [];
+        this.finished = false;
+        if (this.loading) {
+          window.setTimeout(() => this.resetAndQuery(), 100);
+          return;
+        }
+        this.queryShops();
+      },
+      queryShops() {
+        if (this.loading || this.finished) return;
+        this.loading = true;
+        let retryWithFallback = false;
+        const browseByName = Boolean(this.keyword) || !this.params.typeId;
+        axios.get(browseByName ? "/shop/of/name" : "/shop/of/type", {
+            params: browseByName ? {name: this.keyword, current: this.params.current} : this.params
+          })
+          .then(({data}) => {
+            const records = Array.isArray(data) ? data : [];
+            if (!browseByName && records.length === 0 && this.params.current === 1 && this.locationMode === "current" && !this.locationFallbackTried) {
+              this.locationFallbackTried = true;
+              this.params.x = 120.1551;
+              this.params.y = 30.2741;
+              this.locationMode = "fallback";
+              this.locationLabel = "你附近5公里暂无收录店铺，当前按杭州中心显示参考距离";
+              retryWithFallback = true;
+              return;
+            }
+            records.forEach(s => {
+              s.images = (s.images || '').split(',')[0];
+              if ((s.distance === undefined || s.distance === null) && s.x != null && s.y != null) {
+                s.distance = this.calculateDistance(this.params.x, this.params.y, s.x, s.y);
+              }
+            });
+            this.shops = this.shops.concat(records);
+            this.finished = records.length === 0;
+            if (!this.finished) this.params.current++;
+          })
+          .catch(err => {
+            console.log(err);
+            this.$message.error(err)
+          })
+          .finally(() => {
+            this.loading = false;
+            this.isReachBottom = false;
+            if (retryWithFallback) this.$nextTick(() => this.queryShops());
+          })
+      },
+      handleCommand(t) {
+        location.href = "/shop-list.html?type="+t.id+"&name="+t.name;
+      },
+      sortAndQuery(sortBy) {
+        this.params.sortBy = sortBy;
+        this.params.current = 1;
+        this.shops = [];
+        this.finished = false;
+        this.queryShops();
+      },
+      goBack() {
+        history.back();
+      },
+      toDetail(id) {
+        location.href = "/shop-detail.html?id="+id
+      },
+      formatDistance(distance) {
+        const meters = Number(distance);
+        return meters < 1000 ? meters.toFixed(0) + 'm' : (meters / 1000).toFixed(1) + 'km';
+      },
+      calculateDistance(fromX, fromY, toX, toY) {
+        const radians = value => value * Math.PI / 180;
+        const latDistance = radians(toY - fromY);
+        const lonDistance = radians(toX - fromX);
+        const a = Math.sin(latDistance / 2) ** 2 + Math.cos(radians(fromY)) * Math.cos(radians(toY)) * Math.sin(lonDistance / 2) ** 2;
+        return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      },
+      onScroll() {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        if(scrollTop + window.innerHeight >= document.documentElement.scrollHeight - 120 && !this.isReachBottom){
+          this.isReachBottom = true
+          this.queryShops();
+        }else{
+          this.isReachBottom = false
+        }
+      },
+    }
+  })
+</script>
+</body>
+</html>

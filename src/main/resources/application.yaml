@@ -3,6 +3,16 @@ server:
 spring:
   application:
     name: hmdp
+  # RabbitTemplate 发送订单、@RabbitListener 消费订单，都使用下面这组连接参数。
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: root
+    password: 123456
+    virtual-host: /
+    listener:
+      simple:
+        prefetch: 1
   servlet:
     multipart:
       # 知识库问答支持一次上传多个 PDF/Markdown，单文件上限 20MB
@@ -17,6 +27,7 @@ spring:
   redis:
     host: 127.0.0.1
     port: 6379
+    # Redis 容器已开启认证；RedisTemplate 和项目原有 Redisson 客户端都读取这一密码。
     password: "123456"
     lettuce:
       pool:

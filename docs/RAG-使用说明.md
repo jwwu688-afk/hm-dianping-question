@@ -65,6 +65,8 @@ cd D:\code\nginx-1.18.0
 
 如果 Nginx 已经在运行，修改前端文件后可执行 `.\nginx.exe -s reload`。
 
+> 前端源码位置：新版商城前台已于 2026-10-10 迁到 `D:\code\hm-dianping\frontend`（原 `D:\code\nginx-1.18.0\html\hmdp-next`），与 Java 后端同仓库管理；`nginx.conf` 的 `root` 已指向该绝对路径。旧版「智能问答」前端仍在 `D:\code\nginx-1.18.0\html\hmdp`。改完前端记得 `-s reload`，浏览器再 Ctrl+F5 硬刷新。
+
 ### 5. 使用 RAG
 
 - 登录黑马点评后打开前端智能问答页面：`http://127.0.0.1:8080/rag.html`

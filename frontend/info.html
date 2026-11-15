@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link href="./css/info.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="./css/desktop.css">
+    <link rel="stylesheet" href="./css/components.css">
+</head>
+
+<body>
+<div id="app">
+    <hmdp-header active="profile"></hmdp-header>
+  <div class="profile-mobile-bar"><button @click="goBack"><i class="el-icon-arrow-left"></i></button><strong>个人主页</strong><span></span></div>
+  <main class="hmdp-container hmdp-shell">
+    <div class="hmdp-profile-layout">
+      <aside class="hmdp-profile-card">
+        <div class="profile-card__accent"><span>我的生活名片</span></div>
+        <div class="profile-card__body">
+          <div class="profile-card__identity">
+            <div class="profile-avatar-shell"><img @error="useFallbackImage" :src="user.icon || '/imgs/icons/default-icon.png'" alt="头像"><i class="el-icon-check"></i></div>
+            <div class="profile-card__copy"><span class="profile-eyebrow">黑马点评用户</span><h1>{{user.nickName || '黑马用户'}}</h1><span class="profile-location"><i class="el-icon-location-outline"></i> {{info.city || '城市未填写'}}</span><p>{{info.introduce || '添加个人简介，让大家更好地认识你。'}}</p></div>
+          </div>
+          <div class="profile-card__side">
+            <div class="profile-stats"><div><strong>{{info.followee || 0}}</strong><span>关注</span></div><div><strong>{{info.fans || 0}}</strong><span>粉丝</span></div><div><strong>{{blogs.length}}</strong><span>笔记</span></div></div>
+            <div class="profile-actions"><el-button class="hmdp-button-primary" @click="toEdit">编辑资料</el-button><el-button @click="logout">退出登录</el-button></div>
+          </div>
+        </div>
+      </aside>
+      <section class="hmdp-profile-content">
+        <div class="profile-content-heading"><div><span>CONTENT</span><h2>我的生活记录</h2><p>收藏城市里的好味道，也分享每一次真实体验。</p></div><el-button class="hmdp-button-primary" icon="el-icon-edit-outline" @click="toPublish">发布笔记</el-button></div>
+        <el-tabs v-model="activeName" @tab-click="handleClick">
+          <el-tab-pane label="我的笔记" name="1"><div class="profile-blog-grid"><article v-for="b in blogs" :key="b.id" class="profile-blog-card hmdp-card" @click="toBlogDetail(b)"><div class="profile-blog-cover"><img @error="useFallbackImage" :src="firstImage(b.images)" alt="笔记封面"><span>生活笔记</span></div><div class="profile-blog-card__body"><strong class="hmdp-line-clamp-2">{{b.title}}</strong><span><i class="el-icon-thumb"></i> {{b.liked || 0}} &nbsp; <i class="el-icon-chat-dot-round"></i> {{b.comments || 0}}</span></div></article></div><div class="hmdp-empty" v-if="blogs.length === 0">还没有发布笔记</div></el-tab-pane>
+          <el-tab-pane label="评价" name="2"><div class="hmdp-empty">评价功能正在完善</div></el-tab-pane>
+          <el-tab-pane :label="'粉丝(' + (info.fans || 0) + ')'" name="3"><div class="hmdp-empty">粉丝列表暂未开放</div></el-tab-pane>
+          <el-tab-pane :label="'关注(' + (info.followee || 0) + ')'" name="4"><div class="profile-blog-grid"><article v-for="b in blogs2" :key="b.id" class="profile-blog-card hmdp-card" @click="toBlogDetail(b)"><div class="profile-blog-cover"><img @error="useFallbackImage" :src="b.img" alt="笔记封面"><span>关注动态</span></div><div class="profile-blog-card__body"><strong class="hmdp-line-clamp-2">{{b.title}}</strong><span>{{b.name}} · {{b.liked || 0}} 赞</span></div></article></div><div class="hmdp-empty" v-if="blogs2.length === 0">暂无关注动态</div></el-tab-pane>
+        </el-tabs>
+      </section>
+    </div>
+  </main>
+  <foot-bar :active-btn="4"></foot-bar>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/header.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      user: "",
+      activeName: "1",
+      info: {},
+      blogs: [],
+      blogs2: [], // 关注的人的播客
+      params: {
+        minTime: 0, // 上一次拉取到的时间戳
+        offset: 0, // 偏移量
+      },
+      count: 5,
+      isReachBottom: false,
+    },
+    created() {
+      this.queryUser();
+    },
+    methods: {
+      load() {
+        this.count += 2;
+      },
+      queryBlogs() {
+        axios.get("/blog/of/me")
+          .then(({data}) => this.blogs = data || [])
+          .catch(err => this.$message.error(err))
+      },
+      queryBlogsOfFollow(clear) {
+        if (clear) {
+          this.params.offset = 0;
+          this.params.minTime = new Date().getTime() + 1;
+        }
+        let {minTime, offset: os} = this.params;
+        axios.get("/blog/of/follow", {
+            params: {offset: os, lastId: minTime || new Date().getTime() + 1}
+          })
+          .then(({data}) => {
+            if (!data) {
+              return;
+            }
+            let {list, ...params} = data;
+            list.forEach(b => b.img = b.images.split(",")[0])
+            this.blogs2 = clear ? list : this.blogs2.concat(list);
+            this.params = params;
+          })
+          .catch(e => console.log(e))
+      },
+      queryUser() {
+        // 查询用户信息
+        axios.get("/user/me")
+          .then(({data}) => {
+            // 保存用户
+            this.user = data;
+            // 查询用户详情
+            this.queryUserInfo();
+            // 查询用户笔记
+            this.queryBlogs();
+          })
+          .catch(err => {
+            location.href = "/login.html"
+          })
+      },
+      goBack() {
+        history.back();
+      },
+      queryUserInfo() {
+        axios.get("/user/info/" + this.user.id)
+          .then(({data}) => {
+            if (!data) {
+              return
+            }
+            // 保存用户详情
+            this.info = data;
+            // 保存到本地
+            sessionStorage.setItem("userInfo", JSON.stringify(data))
+          })
+          .catch(err => {
+            this.$message.error(err);
+          })
+      },
+      toEdit() {
+        location.href = '/info-edit.html'
+      },
+      toPublish() {
+        location.href = '/blog-edit.html'
+      },
+      logout() {
+        axios.post("/user/logout")
+          .catch(() => {})
+          .finally(() => {
+            // 清理session
+            sessionStorage.removeItem("token")
+            // 跳转
+            location.href = "/"
+          })
+      },
+      handleClick(r) {
+        if (r.name === '4') {
+          this.queryBlogsOfFollow(true);
+        }
+      },
+      addLike(b) {
+        axios.put("/blog/like/" + b.id)
+          .then(({data}) => {
+            this.queryBlogById(b);
+          })
+          .catch(err => {
+            this.$message.error(err)
+          })
+      },
+      queryBlogById(b) {
+        axios.get("/blog/" + b.id)
+          .then(({data}) => {
+            b.liked = data.liked;
+            b.isLike = data.isLike;
+          })
+          .catch(() => {
+            this.$message.error
+            b.liked++;
+          })
+      },
+      onScroll(e) {
+        let scrollTop = e.target.scrollTop;
+        let offsetHeight = e.target.offsetHeight;
+        let scrollHeight = e.target.scrollHeight;
+        if (scrollTop === 0) {
+          // 到顶部了，查询一次
+          this.queryBlogsOfFollow(true);
+        } else if (scrollTop + offsetHeight + 1 > scrollHeight && !this.isReachBottom) {
+          this.isReachBottom = true
+          // 再次查询下一页数据
+          this.queryBlogsOfFollow();
+        } else {
+          this.isReachBottom = false
+        }
+      },
+      firstImage(images) {
+        return (images || "").split(",")[0] || "/imgs/icons/default-icon.png";
+      },
+      toBlogDetail(blog) {
+        location.href = "/blog-detail.html?id=" + blog.id;
+      }
+    },
+
+  })
+</script>
+</body>
+
+</html>

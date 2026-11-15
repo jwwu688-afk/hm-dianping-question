@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>黑马点评</title>
+  <link rel="stylesheet" href="./css/element.css">
+  <link href="./css/main.css" rel="stylesheet">
+  <link rel="stylesheet" href="./css/desktop.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link href="./css/login.css" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+    <hmdp-header active=""></hmdp-header>
+  <main class="hmdp-login-layout">
+    <div class="hmdp-login-card">
+      <section class="hmdp-login-brand">
+        <div class="hmdp-login-brand__content">
+          <div class="hmdp-login-brand__eyebrow"><span>好店</span> HM DIANPING</div>
+          <h1>让每一次出发<br>都有好去处</h1>
+          <p>发现附近口碑好店，记录真实探店体验，让智能助手帮你更快做决定。</p>
+          <div class="hmdp-login-features">
+            <div><i class="el-icon-location-outline"></i><span><strong>发现好店</strong><small>按分类与口碑轻松筛选</small></span></div>
+            <div><i class="el-icon-camera"></i><span><strong>记录体验</strong><small>分享属于你的城市味道</small></span></div>
+            <div><i class="el-icon-chat-dot-round"></i><span><strong>智能选店</strong><small>从真实资料中找到答案</small></span></div>
+          </div>
+        </div>
+        <div class="hmdp-login-brand__quote">“今天，也去发现一家值得收藏的店。”</div>
+      </section>
+      <section class="hmdp-login-panel">
+        <div class="hmdp-login-form">
+          <button class="login-back" type="button" @click="goBack"><i class="el-icon-arrow-left"></i> 返回首页</button>
+          <div class="login-heading">
+            <span class="login-heading__badge">欢迎回来</span>
+            <h2>登录黑马点评</h2>
+            <p class="login-subtitle">登录后收藏好店、发布笔记并使用智能问答</p>
+          </div>
+          <nav class="hmdp-login-mode-tabs" aria-label="登录方式">
+            <a class="is-active" href="/login.html">验证码登录</a>
+            <a href="/login2.html">密码登录</a>
+          </nav>
+          <div class="login-field">
+            <label for="phone">手机号</label>
+            <div class="login-phone-row">
+              <el-input id="phone" prefix-icon="el-icon-mobile-phone" placeholder="请输入手机号" v-model="form.phone"></el-input>
+              <el-button class="login-code-button" @click="sendCode" :loading="sendingCode" :disabled="disabled">{{codeBtnMsg}}</el-button>
+            </div>
+          </div>
+          <div class="login-field">
+            <label for="code">验证码</label>
+            <el-input id="code" prefix-icon="el-icon-key" placeholder="请输入 6 位验证码" v-model="form.code" @keyup.enter.native="login"></el-input>
+          </div>
+          <label class="login-consent" for="readed">
+            <input id="readed" type="checkbox" v-model="radio" true-value="1" false-value="">
+            <span class="login-consent__check"><i class="el-icon-check"></i></span>
+            <span>我已阅读并同意<a href="javascript:void(0)">《用户服务协议》</a>和<a href="javascript:void(0)">《隐私政策》</a></span>
+          </label>
+          <el-button class="hmdp-button-primary login-submit" @click="login" :loading="loading">登录</el-button>
+          <p class="login-tip"><i class="el-icon-lock"></i> 未注册手机号验证后将自动创建账户</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="./js/vue.js"></script>
+<script src="./js/axios.min.js"></script>
+<!-- 引入组件库 -->
+<script src="./js/element.js"></script>
+<script src="./js/common.js"></script>
+<script src="./js/header.js"></script>
+<script src="./js/footer.js"></script>
+<script>
+
+  const app = new Vue({
+    el: "#app",
+    data: {
+      radio: "",
+      disabled: false, // 发送短信按钮
+      loading: false,
+      sendingCode: false,
+      codeBtnMsg: "发送验证码", // 发送短信按钮提示
+      form:{
+      }
+    },
+    methods: {
+      login(){
+        if(!this.radio){
+          this.$message.error("请先确认阅读用户协议！");
+          return
+        }
+        if(!this.form.phone || !this.form.code){
+          this.$message.error("手机号和验证码不能为空！");
+          return
+        }
+        this.loading = true;
+        axios.post("/user/login", this.form)
+        .then(({data}) => {
+            if(data){
+              // 保存用户信息到session
+              sessionStorage.setItem("token", data);
+            }
+            // 跳转到首页
+            location.href = "/index.html"
+        })
+        .catch(err => this.$message.error(err))
+        .finally(() => this.loading = false)
+      },
+      goBack(){
+        history.back();
+      },
+      sendCode(){
+        if (!this.form.phone) {
+          this.$message.error("手机号不能为空");
+          return;
+        }
+        this.sendingCode = true;
+        this.disabled = true;
+        // 发送验证码
+        axios.post("/user/code?phone="+this.form.phone)
+          .then(() => {
+            let i = 60;
+            this.codeBtnMsg = (i--) + '秒后可重发'
+            let taskId = setInterval(() => this.codeBtnMsg = (i--) + '秒后可重发', 1000);
+            setTimeout(() => {
+              this.disabled = false;
+              clearInterval(taskId);
+              this.codeBtnMsg = "发送验证码";
+            }, 59000)
+          })
+          .catch(err => {
+            console.log(err);
+            this.$message.error(err)
+            this.disabled = false;
+          })
+          .finally(() => this.sendingCode = false);
+      }
+    }
+  })
+</script>
+</body>
+</html>

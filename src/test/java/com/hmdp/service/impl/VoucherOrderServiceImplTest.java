@@ -1,103 +1,92 @@
 package com.hmdp.service.impl;
 
+import com.hmdp.config.OrderRabbitConfig;
+import com.hmdp.dto.Result;
+import com.hmdp.dto.UserDTO;
+import com.hmdp.entity.VoucherOrder;
+import com.hmdp.mapper.SeckillVoucherMapper;
+import com.hmdp.mapper.VoucherOrderMapper;
+import com.hmdp.utils.RedisIdWorker;
+import com.hmdp.utils.UserHolder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.dao.DataAccessResourceFailureException;
-import org.springframework.data.redis.RedisSystemException;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.connection.RedisStreamCommands;
-import org.springframework.data.redis.core.RedisCallback;
+import org.mockito.ArgumentCaptor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.data.redis.core.script.RedisScript;
 
-import javax.annotation.PreDestroy;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+/** 只验证“Lua 成功后发送订单”和“消费者保存订单”两段主流程。 */
 class VoucherOrderServiceImplTest {
-
-    @Test
-    void createsOrderStreamAndConsumerGroupWhenApplicationStarts() {
-        StringRedisTemplate template = mock(StringRedisTemplate.class);
-        RedisConnection connection = mock(RedisConnection.class);
-        RedisStreamCommands commands = mock(RedisStreamCommands.class);
-        when(connection.streamCommands()).thenReturn(commands);
-        when(template.execute(any(RedisCallback.class))).thenAnswer(invocation ->
-                ((RedisCallback<?>) invocation.getArgument(0)).doInRedis(connection));
-        VoucherOrderServiceImpl service = new VoucherOrderServiceImpl();
-        ReflectionTestUtils.setField(service, "stringRedisTemplate", template);
-
-        service.initializeOrderStream();
-
-        verify(commands).xGroupCreate(
-                eq("stream.orders".getBytes(StandardCharsets.UTF_8)),
-                eq("g1"), any(), eq(true));
+    @AfterEach
+    void cleanup() {
+        UserHolder.removeUser();
     }
 
     @Test
-    void allowsRestartWhenConsumerGroupAlreadyExists() {
-        StringRedisTemplate template = mock(StringRedisTemplate.class);
-        when(template.execute(any(RedisCallback.class))).thenThrow(
-                new RedisSystemException("BUSYGROUP Consumer Group name already exists", new RuntimeException()));
-        VoucherOrderServiceImpl service = new VoucherOrderServiceImpl();
-        ReflectionTestUtils.setField(service, "stringRedisTemplate", template);
+    void successfulReservationDirectlyPublishesVoucherOrder() {
+        UserDTO user = new UserDTO();
+        user.setId(42L);
+        UserHolder.saveUser(user);
 
-        assertDoesNotThrow(service::initializeOrderStream);
+        RedisIdWorker ids = mock(RedisIdWorker.class);
+        when(ids.nextId("order")).thenReturn(9007199254740993L);
+        StringRedisTemplate redis = mock(StringRedisTemplate.class);
+        when(redis.execute(any(RedisScript.class), anyList(), anyString(), anyString(), anyString()))
+                .thenReturn(0L);
+        RabbitTemplate rabbit = mock(RabbitTemplate.class);
+
+        VoucherOrderServiceImpl service = service(redis, ids, rabbit,
+                mock(VoucherOrderMapper.class), mock(SeckillVoucherMapper.class));
+        Result result = service.seckillVoucher(7L);
+
+        verify(redis).execute(any(RedisScript.class),
+                eq(java.util.Arrays.asList("seckill:stock:7", "seckill:order:7")),
+                eq("7"), eq("42"), eq("9007199254740993"));
+        ArgumentCaptor<VoucherOrder> order = ArgumentCaptor.forClass(VoucherOrder.class);
+        // Fanout 交换机不根据 routing key 路由，生产者统一传空字符串。
+        verify(rabbit).convertAndSend(eq(OrderRabbitConfig.EXCHANGE), eq(""), order.capture());
+        assertEquals(9007199254740993L, order.getValue().getId());
+        assertEquals(42L, order.getValue().getUserId());
+        assertEquals(7L, order.getValue().getVoucherId());
+        assertTrue(result.getSuccess());
+        assertEquals(9007199254740993L, result.getData());
     }
 
     @Test
-    void doesNotHideOtherRedisInitializationFailures() {
-        StringRedisTemplate template = mock(StringRedisTemplate.class);
-        when(template.execute(any(RedisCallback.class))).thenThrow(
-                new DataAccessResourceFailureException("Redis unavailable"));
-        VoucherOrderServiceImpl service = new VoucherOrderServiceImpl();
-        ReflectionTestUtils.setField(service, "stringRedisTemplate", template);
+    void luaFailureDoesNotSendRabbitMessage() {
+        UserDTO user = new UserDTO();
+        user.setId(42L);
+        UserHolder.saveUser(user);
+        StringRedisTemplate redis = mock(StringRedisTemplate.class);
+        when(redis.execute(any(RedisScript.class), anyList(), anyString(), anyString(), anyString())).thenReturn(1L);
+        RabbitTemplate rabbit = mock(RabbitTemplate.class);
 
-        assertThrows(DataAccessResourceFailureException.class, service::initializeOrderStream);
+        Result result = service(redis, mock(RedisIdWorker.class), rabbit,
+                mock(VoucherOrderMapper.class), mock(SeckillVoucherMapper.class)).seckillVoucher(7L);
+
+        assertFalse(result.getSuccess());
+        verifyNoInteractions(rabbit);
     }
 
     @Test
-    void shutsDownOwnedOrderExecutorWhenBeanIsDestroyed() throws Exception {
-        VoucherOrderServiceImpl service = new VoucherOrderServiceImpl();
-        Method shutdown = VoucherOrderServiceImpl.class.getDeclaredMethod("shutdownOrderExecutor");
-        shutdown.setAccessible(true);
+    void consumerDeductsDatabaseStockAndInsertsOrder() {
+        VoucherOrderMapper orders = mock(VoucherOrderMapper.class);
+        SeckillVoucherMapper vouchers = mock(SeckillVoucherMapper.class);
+        VoucherOrder order = new VoucherOrder().setId(1L).setUserId(42L).setVoucherId(7L);
 
-        Field executorField = VoucherOrderServiceImpl.class.getDeclaredField("seckillOrderExecutor");
-        executorField.setAccessible(true);
-        ExecutorService executor = (ExecutorService) executorField.get(service);
-        CountDownLatch started = new CountDownLatch(1);
-        CountDownLatch interrupted = new CountDownLatch(1);
-        executor.submit(() -> {
-            started.countDown();
-            try {
-                new CountDownLatch(1).await();
-            } catch (InterruptedException exception) {
-                interrupted.countDown();
-                Thread.currentThread().interrupt();
-            }
-        });
-        assertTrue(started.await(1, TimeUnit.SECONDS));
+        service(mock(StringRedisTemplate.class), mock(RedisIdWorker.class), mock(RabbitTemplate.class),
+                orders, vouchers).onMessage(order);
 
-        shutdown.invoke(service);
+        verify(vouchers).update(isNull(), any());
+        verify(orders).insert(order);
+    }
 
-        assertTrue(shutdown.isAnnotationPresent(PreDestroy.class));
-        assertFalse(Modifier.isStatic(executorField.getModifiers()));
-        assertTrue(interrupted.await(1, TimeUnit.SECONDS));
-        assertTrue(executor.isShutdown());
-        assertTrue(executor.awaitTermination(1, TimeUnit.SECONDS));
+    private VoucherOrderServiceImpl service(StringRedisTemplate redis, RedisIdWorker ids, RabbitTemplate rabbit,
+            VoucherOrderMapper orders, SeckillVoucherMapper vouchers) {
+        return new VoucherOrderServiceImpl(redis, ids, rabbit, orders, vouchers);
     }
 }

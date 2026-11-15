@@ -1,0 +1,402 @@
+加载金标集 golden_set.jsonl：64 条 query
+正在加载 BGE reranker（本地模型，首次加载较慢）...
+[32m2026-11-14 20:00:52.992[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:00:52.994[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mget_bge_m3_ef  [0m:[36m26  [0m - [1m开始初始化BGE-M3模型[0m
+[32m2026-11-14 20:00:53.704[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mget_bge_m3_ef  [0m:[36m44  [0m - [32m[1mBGE-M3模型初始化成功，已开启原生L2归一化[0m
+You're using a XLMRobertaTokenizerFast tokenizer. Please note that with a fast tokenizer, using the `__call__` method is faster than using a method to encode the text followed by a call to the `pad` method to get a padded encoding.
+[32m2026-11-14 20:00:54.002[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:00:54.074[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mget_milvus_client[0m:[36m27  [0m - [1mMilvus客户端连接成功[0m
+[32m2026-11-14 20:00:54.092[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:00:54.098[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:00:54.113[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+You're using a XLMRobertaTokenizerFast tokenizer. Please note that with a fast tokenizer, using the `__call__` method is faster than using a method to encode the text followed by a call to the `pad` method to get a padded encoding.
+[1/64] 完成: 我想去103茶餐厅吃饭，这家店在哪个商圈？地址在哪？
+[32m2026-11-14 20:01:19.495[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:01:19.721[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:01:19.743[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:01:19.750[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:01:19.771[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[2/64] 完成: 想吃老北京铜锅涮肉，蔡馬洪涛烤肉这家店怎么样？
+[32m2026-11-14 20:01:51.107[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:01:51.304[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:01:51.319[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:01:51.326[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:01:51.340[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[3/64] 完成: 新白鹿餐厅运河上街店的店铺信息帮我介绍一下
+[32m2026-11-14 20:02:07.571[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:02:08.199[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:02:08.216[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:02:08.222[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:02:08.237[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[4/64] 完成: 海底捞火锅水晶城购物中心店的具体位置在哪？
+[32m2026-11-14 20:02:41.459[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:02:42.047[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:02:42.064[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:02:42.071[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:02:42.082[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[5/64] 完成: 幸福里老北京涮锅丝联店在哪个商圈？
+[32m2026-11-14 20:03:04.379[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:03:04.605[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:03:04.628[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:03:04.633[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:03:04.645[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[6/64] 完成: 拱墅万达广场的炉鱼烤鱼店帮我查一下信息
+[32m2026-11-14 20:03:14.766[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:03:15.384[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:03:15.398[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:03:15.407[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:03:15.421[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[7/64] 完成: Mamala远洋乐堤港店是做什么菜的？
+[32m2026-11-14 20:04:07.230[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:04:07.887[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:04:07.902[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:04:07.910[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:04:07.925[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[8/64] 完成: 想吃寿司，运河上街的浅草屋寿司怎么样？
+[32m2026-11-14 20:05:00.646[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:05:01.216[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:05:01.230[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:05:01.237[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:05:01.248[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[9/64] 完成: 水晶城的INLOVE KTV帮我介绍一下
+[32m2026-11-14 20:05:34.124[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:05:34.833[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:05:34.849[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:05:34.855[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:05:34.868[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[10/64] 完成: 运河上街那家羊老三羊蝎子牛仔排火锅店在哪？
+[32m2026-11-14 20:06:26.347[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:06:26.974[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:06:26.987[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:06:26.993[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:06:27.048[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[11/64] 完成: 开乐迪KTV运河上街店的位置和情况介绍一下
+[32m2026-11-14 20:06:47.702[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:06:47.918[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:06:47.931[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:06:47.939[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:06:47.951[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[12/64] 完成: 拱墅区万达附近的星聚会KTV怎么样？
+[32m2026-11-14 20:07:39.828[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:07:40.485[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:07:40.502[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:07:40.508[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:07:40.521[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[13/64] 完成: 远洋乐堤港的魅KTV是干什么的店？
+[32m2026-11-14 20:08:32.225[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:08:33.015[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:08:33.032[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:08:33.038[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:08:33.053[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[14/64] 完成: 北城天地附近的量贩KTV有哪些？讴K拉怎么样？
+[32m2026-11-14 20:09:06.410[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:09:06.988[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:09:07.003[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:09:07.010[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:09:07.022[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[15/64] 完成: 湖滨商圈有什么老杭州菜馆推荐？
+[32m2026-11-14 20:09:58.937[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:09:59.547[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:09:59.561[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:09:59.568[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:09:59.581[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[16/64] 完成: 滨江西兴那边有什么好吃的饭店？
+[32m2026-11-14 20:10:51.714[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:10:52.367[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:10:52.382[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:10:52.388[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:10:52.401[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[17/64] 完成: 茅家埠附近那家食为鲜餐厅做的是什么菜？
+[32m2026-11-14 20:11:44.717[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:11:45.304[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:11:45.320[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:11:45.326[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:11:45.339[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[18/64] 完成: 三墩镇有哪些KTV可以唱歌？
+[32m2026-11-14 20:12:18.450[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:12:19.064[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:12:19.078[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:12:19.085[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:12:19.097[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[19/64] 完成: 紫金生活广场有唱吧麦颂KTV吗？
+[32m2026-11-14 20:12:52.377[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:12:52.976[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:12:52.992[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:12:52.999[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:12:53.011[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[20/64] 完成: 清波街的九月生活是卖什么的店？
+[32m2026-11-14 20:13:45.473[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:13:46.059[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:13:46.074[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:13:46.081[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:13:46.094[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[21/64] 完成: 天城路附近的理发店有推荐的吗？
+[32m2026-11-14 20:14:17.161[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:14:17.745[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:14:17.759[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:14:17.764[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:14:17.776[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[22/64] 完成: 萧山通惠路附近有哪些KTV？
+[32m2026-11-14 20:14:50.999[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:14:51.623[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:14:51.638[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:14:51.644[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:14:51.657[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[23/64] 完成: 钱江新城做头发哪家店好？
+[32m2026-11-14 20:15:23.715[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:15:24.316[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:15:24.333[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:15:24.339[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:15:24.351[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[24/64] 完成: 富阳东方茂那边的KTV哪家好？
+[32m2026-11-14 20:16:17.118[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:16:17.752[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:16:17.766[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:16:17.774[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:16:17.833[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[25/64] 完成: 西湖大道附近有没有适合约会的景观餐厅？
+[32m2026-11-14 20:17:10.532[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:17:11.138[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:17:11.152[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:17:11.157[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:17:11.171[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[26/64] 完成: 西湖区厚仁街附近哪里有KTV？
+[32m2026-11-14 20:17:44.409[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:17:44.990[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:17:45.006[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:17:45.012[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:17:45.025[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[27/64] 完成: 余杭西田城附近有健身房吗？
+[32m2026-11-14 20:18:18.268[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:18:18.844[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:18:18.857[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:18:18.864[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:18:18.878[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[28/64] 完成: 高新文教区哪里可以做头发？
+[32m2026-11-14 20:18:50.860[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:18:51.501[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:18:51.515[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:18:51.522[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:18:51.535[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[29/64] 完成: 湖滨商圈有没有老字号的美发店？
+[32m2026-11-14 20:19:23.203[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:19:23.808[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:19:23.825[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:19:23.834[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:19:23.848[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[30/64] 完成: 吴山广场附近有足疗按摩店吗？
+[32m2026-11-14 20:19:56.908[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:19:57.521[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:19:57.538[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:19:57.545[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:19:57.558[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[31/64] 完成: 西田城附近做足疗哪家好？
+[32m2026-11-14 20:20:30.190[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:20:30.806[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:20:30.822[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:20:30.829[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:20:30.842[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32/64] 完成: 文一西路的美发店哪家口碑好？
+[32m2026-11-14 20:21:01.541[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:21:02.226[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:21:02.241[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:21:02.247[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:21:02.262[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[33/64] 完成: 湖滨开元路那边有做足道SPA的店吗？
+[32m2026-11-14 20:21:35.616[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:21:36.229[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:21:36.244[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:21:36.250[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:21:36.265[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[34/64] 完成: 下沙银泰附近有练力量的健身房吗？
+[32m2026-11-14 20:22:09.932[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:22:10.551[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:22:10.571[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:22:10.578[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:22:10.591[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[35/64] 完成: 中大银泰城里面有健身房吗？
+[32m2026-11-14 20:22:43.521[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:22:44.093[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:22:44.108[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:22:44.115[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:22:44.127[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[36/64] 完成: 维景酒店附近有足疗SPA吗？
+[32m2026-11-14 20:23:16.734[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:23:17.341[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:23:17.356[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:23:17.362[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:23:17.376[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[37/64] 完成: 西溪八方城附近能健身的地方有哪些？
+[32m2026-11-14 20:23:50.955[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:23:51.551[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:23:51.567[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:23:51.574[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:23:51.587[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[38/64] 完成: 拱墅水晶城附近有乐刻健身房吗？
+[32m2026-11-14 20:24:43.941[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:24:44.548[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:24:44.561[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:24:44.567[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:24:44.581[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[39/64] 完成: 老余杭哪家足浴店好？
+[32m2026-11-14 20:25:17.366[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:25:17.961[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:25:17.974[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:25:17.979[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:25:17.995[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[40/64] 完成: 湖墅南路附近有美容SPA店吗？
+[32m2026-11-14 20:25:50.682[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:25:51.288[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:25:51.305[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:25:51.312[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:25:51.327[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[41/64] 完成: 城西银泰城附近的美容院有推荐吗？
+[32m2026-11-14 20:26:24.832[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:26:25.425[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:26:25.439[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:26:25.445[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:26:25.468[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[42/64] 完成: 西湖文化广场附近的养生SPA哪家好？
+[32m2026-11-14 20:26:58.660[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:26:59.291[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:26:59.310[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:26:59.318[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:26:59.332[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[43/64] 完成: 古墩路附近有做美容SPA的地方吗？
+[32m2026-11-14 20:27:31.599[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:27:32.175[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:27:32.194[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:27:32.201[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:27:32.214[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[44/64] 完成: 黄龙附近的美容SPA连锁店有哪些？
+[32m2026-11-14 20:28:04.722[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:28:05.358[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:28:05.373[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:28:05.380[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:28:05.393[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[45/64] 完成: 西溪银泰城附近有儿童游乐场吗？
+[32m2026-11-14 20:28:35.035[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:28:35.741[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:28:35.755[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:28:35.761[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:28:35.775[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[46/64] 完成: 秋涛路天城路一带适合带小孩去玩的地方？
+[32m2026-11-14 20:29:09.507[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:29:10.096[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:29:10.111[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:29:10.117[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:29:10.130[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[47/64] 完成: 钱塘区义蓬有没有儿童乐园？
+[32m2026-11-14 20:29:44.740[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:29:44.987[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:29:45.002[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:29:45.008[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:29:45.021[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[48/64] 完成: 临平万达的兔子王国儿童乐园怎么样？
+[32m2026-11-14 20:30:00.371[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:30:00.573[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:30:00.588[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:30:00.594[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:30:00.607[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[49/64] 完成: 富阳区有什么儿童主题乐园？
+[32m2026-11-14 20:30:16.993[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:30:17.689[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:30:17.705[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:30:17.711[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:30:17.726[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[50/64] 完成: 万松岭附近有国风小酒馆吗？
+[32m2026-11-14 20:30:36.640[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:30:36.895[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:30:36.910[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:30:36.915[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:30:36.930[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[51/64] 完成: 滨江西兴有适合团建的轰趴馆吗？
+[32m2026-11-14 20:30:49.017[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:30:49.281[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:30:49.297[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:30:49.306[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:30:49.319[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[52/64] 完成: 湖滨商圈有什么氛围好的酒吧推荐？
+[32m2026-11-14 20:31:07.207[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:31:07.502[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:31:07.521[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:31:07.527[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:31:07.544[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[53/64] 完成: 延安路工联附近有酒吧吗？
+[32m2026-11-14 20:31:40.250[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:31:40.845[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:31:40.859[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:31:40.866[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:31:40.879[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[54/64] 完成: 北景园附近做美甲去哪家店？
+[32m2026-11-14 20:32:14.595[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:32:15.271[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:32:15.285[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:32:15.292[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:32:15.308[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[55/64] 完成: 中豪国际附近有棋牌台球轰趴都能玩的店吗？
+[32m2026-11-14 20:32:48.805[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:32:49.458[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:32:49.475[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:32:49.481[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:32:49.498[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[56/64] 完成: 桐庐有适合公司团建的度假轰趴馆吗？
+[32m2026-11-14 20:33:26.636[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:33:27.222[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:33:27.237[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:33:27.243[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:33:27.256[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[57/64] 完成: 西湖文化广场附近的酒吧哪家氛围好？
+[32m2026-11-14 20:34:04.659[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:34:05.251[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:34:05.264[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:34:05.273[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:34:05.286[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[58/64] 完成: 上塘路附近有什么lounge清吧？
+[32m2026-11-14 20:34:51.007[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:34:51.918[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:34:51.934[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:34:51.941[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:34:51.954[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[59/64] 完成: 萧山北干做美甲美睫去哪家店？
+[32m2026-11-14 20:35:22.501[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:35:23.147[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:35:23.165[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:35:23.172[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:35:23.187[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[60/64] 完成: 萧山高教园附近有露营团建的营地吗？
+[32m2026-11-14 20:35:49.741[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:35:50.148[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:35:50.167[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:35:50.174[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:35:50.192[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[61/64] 完成: 萧山哪里有户外烧烤加轰趴的营地？
+[32m2026-11-14 20:36:02.081[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:36:02.362[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:36:02.379[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:36:02.386[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:36:02.398[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[62/64] 完成: 武林广场附近有俄式美甲店吗？
+[32m2026-11-14 20:36:11.790[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:36:12.035[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:36:12.048[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:36:12.053[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:36:12.067[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[63/64] 完成: 临平有日式美甲美睫店吗？
+[32m2026-11-14 20:36:26.925[0m | [1mINFO    [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m63  [0m - [1m开始为1条文本生成混合向量嵌入[0m
+[32m2026-11-14 20:36:27.573[0m | [32m[1mSUCCESS [0m | [36membedding_utils.py  [0m:[36mgenerate_embeddings[0m:[36m91  [0m - [32m[1m1条文本向量生成完成，格式已适配工业级使用[0m
+[32m2026-11-14 20:36:27.590[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:36:27.596[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[32m2026-11-14 20:36:27.609[0m | [1mINFO    [0m | [36mmilvus_utils.py     [0m:[36mhybrid_search  [0m:[36m193 [0m - [1mMilvus混合搜索完成，集合[hmdp_knowledge_v2]共检索到10条结果[0m
+[64/64] 完成: 钱江新城万象城附近的美甲沙龙哪家好？
+
+===== 评测结果摘要 =====
+dense_only               hit@1=0.938  hit@3=1.000  hit@5=1.000  recall@5=1.000  mrr@10=0.969  ndcg@5=0.977  p50=5ms p95=8ms
+sparse_only              hit@1=0.969  hit@3=1.000  hit@5=1.000  recall@5=1.000  mrr@10=0.984  ndcg@5=0.988  p50=4ms p95=6ms
+hybrid_w_50_50           hit@1=0.969  hit@3=1.000  hit@5=1.000  recall@5=1.000  mrr@10=0.984  ndcg@5=0.988  p50=6ms p95=9ms
+hybrid_w_80_20           hit@1=0.969  hit@3=1.000  hit@5=1.000  recall@5=1.000  mrr@10=0.984  ndcg@5=0.988  p50=6ms p95=8ms
+hybrid_rrf               hit@1=0.953  hit@3=1.000  hit@5=1.000  recall@5=1.000  mrr@10=0.977  ndcg@5=0.983  p50=7ms p95=9ms
+hybrid_w_80_20_rerank    hit@1=0.953  hit@3=1.000  hit@5=1.000  recall@5=1.000  mrr@10=0.977  ndcg@5=0.983  p50=33090ms p95=52447ms
+
+报告: D:\code\hm-dianping\services\shop-qa\scripts\eval\eval_out\comparison_report.md
+明细: D:\code\hm-dianping\services\shop-qa\scripts\eval\eval_out\results.csv
