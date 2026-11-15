@@ -1,8 +1,15 @@
+"""文档导入流水线主图编排模块。
+
+基于 LangGraph StateGraph 编排「店铺文档导入」全流程：
+node_entry → (PDF转MD | MD直传) → MD图片处理 → 文档切分 → 商品名识别 → BGE向量化 → Milvus入库。
+本模块职责：加载环境变量、注册节点、定义条件边/静态边、编译可执行图供 API 层调用。
+"""
 # 加载环境变量：从 .env 文件读取配置（如Milvus地址、KG服务地址、BGE模型路径等）
 from dotenv import load_dotenv
 # 导入LangGraph核心依赖：StateGraph(状态图)、START/END(内置起始/结束节点常量)
 from langgraph.graph import StateGraph, END, START
 
+# 项目统一日志工具：全流程日志输出入口
 from app.core.logger import logger
 # 导入自定义状态类：统一管理工作流全程的所有数据（各节点共享/修改）
 from app.import_process.agent.state import ImportGraphState, create_default_state
@@ -46,6 +53,9 @@ workflow.set_entry_point("node_entry")
 # ===================== 4. 定义条件路由函数（入口节点后的分支逻辑） =====================
 # 核心：根据状态中的配置项，动态决定后续执行路径，实现「PDF导入」/「MD直接导入」分支
 # 要求：接收状态对象为入参，返回「目标节点标识」或END（内置结束常量）
+# 拓扑总览：node_entry（条件分支）→ node_pdf_to_md → node_md_img → node_document_split
+#           → node_item_name_recognition → node_bge_embedding → node_import_milvus → END
+# 其中 node_md_img 既是 MD 直传分支的目标节点，也是 PDF 转换路径的汇聚点（两条路径在此合并）
 def route_after_entry(state: ImportGraphState) -> str:
     """
     入口节点后的条件路由逻辑
@@ -69,6 +79,7 @@ workflow.add_conditional_edges(
     "node_entry",
     route_after_entry,
     {
+        # 路由映射表：路由函数返回哪个标识，图就跳转到对应节点；END 表示直接结束
         "node_md_img": "node_md_img",
         "node_pdf_to_md": "node_pdf_to_md",
         END: END
@@ -89,4 +100,6 @@ workflow.add_edge("node_import_milvus", END)  # Milvus入库完成 → 工作流
 # 语法：compile() → 将StateGraph构建的流程编译为LangGraph的可执行应用
 # 作用：生成可调用的kb_import_app，通过invoke()方法触发工作流执行
 # 特性：编译后可重复调用，支持传入不同的初始状态，实现多任务执行
+# 全局导出编译后的可执行图：file_import_service 导入本模块即获得 kb_import_app，
+# 通过 stream()/invoke() 触发整条导入流水线
 kb_import_app = workflow.compile()

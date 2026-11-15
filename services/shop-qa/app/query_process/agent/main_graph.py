@@ -1,3 +1,24 @@
+"""LangGraph 问答主流程编排：把各节点装配成一张可执行的状态图。
+
+拓扑结构（四路并发搜索 + 融合重排的经典 RAG 流水线）：
+
+    node_item_name_confirm（入口：商品名确认 / 查询改写）
+        ├─ answer 已就绪（反问用户或拒答）→ node_answer_output 直接输出
+        └─ 正常 → node_multi_search（虚拟分叉点）
+              ├→ node_search_embedding       普通向量检索
+              ├→ node_search_embedding_hyde  HyDE 假设文档检索
+              ├→ node_web_search_mcp         联网搜索（MCP 工具）
+              └→ node_query_kg               知识图谱检索
+           四路结果汇聚到 node_join（虚拟合并点）
+        → node_rrf（RRF 候选融合）→ node_rerank（BGE 精排）
+        → node_answer_output（生成最终答案）→ END
+
+两个虚拟节点只做流程组织、没有业务逻辑：
+- node_multi_search：LangGraph 中同一节点连出多条边即并发扇出，
+  四条搜索边在同一个 super-step 内并行执行，各自把结果写回 state；
+- node_join：汇合中转站，保证四路检索全部完成后才继续串行链路。
+编译产物 query_app 被 api/query_service.py 导入并 invoke。
+"""
 from langgraph.graph import StateGraph, END
 from app.query_process.agent.state import QueryGraphState
 # 导入所有节点函数
@@ -21,6 +42,7 @@ builder.add_node("node_search_embedding_hyde", node_search_embedding_hyde)
 builder.add_node("node_query_kg", node_query_kg)
 builder.add_node("node_web_search_mcp", node_web_search_mcp)
 builder.add_node("node_join", lambda x: {})  # 虚拟节点：多路搜索合并点
+# node_join 返回空 dict：不做任何状态更新，纯粹等四路检索都到齐后再往下走
 builder.add_node("node_rrf", node_rrf)  # 排序
 builder.add_node("node_rerank", node_rerank)  # 重排
 builder.add_node("node_answer_output", node_answer_output)  # 生成
@@ -34,6 +56,10 @@ builder.set_entry_point("node_item_name_confirm")
 
 
 def route_after_item_confirm(state: QueryGraphState):
+    """入口节点的条件路由：决定「直接输出」还是「进入四路检索」。
+
+    判断依据是 state 里是否已经被写入了 answer 字段（见下方长注释）。
+    """
     # 如果已有答案（Branch B/C），直接跳到输出
     if state.get("answer"):
         """
@@ -52,6 +78,7 @@ def route_after_item_confirm(state: QueryGraphState):
         return "node_answer_output"
     # 否则继续搜索流程
     return "node_multi_search"
+    # 返回值是目标节点名，LangGraph 据此决定条件边的走向
 
 
 # 1. 意图确认 -> (条件分叉) -> 多路搜索 / 答案输出
@@ -61,6 +88,7 @@ builder.add_conditional_edges(
 )
 
 # 2. 并发执行四路搜索
+# 同一节点连出多条边 = 同一 super-step 内并行扇出
 builder.add_edge("node_multi_search", "node_search_embedding")
 builder.add_edge("node_multi_search", "node_search_embedding_hyde")
 builder.add_edge("node_multi_search", "node_web_search_mcp")
@@ -79,4 +107,5 @@ builder.add_edge("node_rerank", "node_answer_output")
 builder.add_edge("node_answer_output", END)
 
 # 编译生成可执行的 Runnable 应用
+# query_app.invoke(state) 即可跑完整条流水线（被 api/query_service.py 使用）
 query_app = builder.compile()

@@ -1,3 +1,14 @@
+"""文档切分节点模块（node_document_split）。
+
+将上游产出的 Markdown 全文切分为长度适中、语义完整的 Chunk，整体流程：
+1. 按标题切分：逐行识别 1-6 级 Markdown 标题，跳过代码块内的伪标题；
+2. 无标题兜底：全文无标题时封装为单个「无标题」章节；
+3. 超长二次切分：超过 2000 字符的章节按「段落→换行→标点」递归切分；
+4. 短章合并：同父标题下不足 500 字符的相邻 Chunk 合并，减少碎片化；
+5. 备份：将最终 Chunk 列表序列化为 chunks.json 落盘，便于排查问题。
+产出写入 state["chunks"]，供商品名识别与向量化节点继续处理。
+"""
+# 标准库：正则匹配标题、JSON序列化备份、目录/文件操作、动态获取函数名
 import re
 import json
 import os
@@ -43,6 +54,7 @@ def step_1_get_inputs(state: ImportGraphState) -> Tuple[Any, str, int]:
     max_len = DEFAULT_MAX_CONTENT_LENGTH
 
     logger.info(f"步骤1：输入数据加载完成，文件标题：{file_title}，最大Chunk长度：{max_len}")
+    # 返回标准化三元组，供后续步骤使用
     return content, file_title, max_len
 
 
@@ -71,8 +83,10 @@ def step_2_split_by_titles(content: str, file_title: str) -> Tuple[List[Dict[str
 
     def _flush_section():
         """内部辅助函数：将当前缓存的章节写入sections，空缓存则跳过"""
+        # 无缓存行说明当前章节为空，直接跳过避免产生空Chunk
         if not current_lines:
             return
+        # 组装章节字典：标题 + 正文 + 归属文件名三元信息
         sections.append({
             "title": current_title,
             # 每段之间使用 \n换行区分
@@ -82,10 +96,12 @@ def step_2_split_by_titles(content: str, file_title: str) -> Tuple[List[Dict[str
 
     # 逐行遍历，识别标题并切分章节
     for line in lines:
+        # 去除行首尾空白，用于代码块边界与标题判断
         stripped_line = line.strip()
         # 识别代码块边界（```/~~~）：进入/退出代码块时翻转状态
         if stripped_line.startswith("```") or stripped_line.startswith("~~~"):
             in_code_block = not in_code_block
+            # 代码块边界行本身也是章节内容，需保留进缓存
             current_lines.append(line)
             continue
 
@@ -94,8 +110,11 @@ def step_2_split_by_titles(content: str, file_title: str) -> Tuple[List[Dict[str
         if is_valid_title:
             # 遇到新标题：先将上一个章节写入结果，再初始化新章节
             _flush_section()
+            # 记录新章节标题（去除首尾空白）
             current_title = line.strip()  # 清理标题前后空格
+            # 新章节缓存以标题行开头，保证Chunk自带标题上下文
             current_lines = [current_title]  # 新章节从标题开始
+            # 有效标题计数 +1，用于后续无标题兜底判断
             title_count += 1
             logger.debug(f"识别到MD标题：{current_title}")
         else:
@@ -105,6 +124,7 @@ def step_2_split_by_titles(content: str, file_title: str) -> Tuple[List[Dict[str
     # 处理最后一个章节：循环结束后，将最后一个缓存的章节写入结果
     _flush_section()
     logger.info(f"步骤2：MD标题切分完成，识别到{title_count}个有效标题，原始文本共{len(lines)}行")
+    # 返回章节列表/有效标题数/总行数三元组
     return sections, title_count, len(lines)
 
 
@@ -126,6 +146,7 @@ def step_3_handle_no_title(content: str, sections: List[Dict[str, Any]], title_c
     logger.debug(f"步骤3：检测到{title_count}个有效标题，无需兜底处理")
     return sections
 
+# 超长二次切分的实际执行者：由 step_4_refine_chunks 对每个超长章节调用
 def _split_long_section(section: Dict[str, Any], max_length: int = DEFAULT_MAX_CONTENT_LENGTH) -> List[Dict[str, Any]]:
     """
     【辅助函数】超长章节二次切分（核心适配LangChain分割器）
@@ -156,6 +177,7 @@ def _split_long_section(section: Dict[str, Any], max_length: int = DEFAULT_MAX_C
 
     # 清理正文重复标题：避免原章节中正文开头重复标题，导致子Chunk内容冗余
     body = content
+    # 正文以标题开头时截掉重复部分，避免子Chunk内容冗余
     if title and body.lstrip().startswith(title):
         body = body[body.find(title) + len(title):].lstrip()
 
@@ -169,15 +191,18 @@ def _split_long_section(section: Dict[str, Any], max_length: int = DEFAULT_MAX_C
     )
 
     # 切分正文并组装子章节（带完整元信息，便于溯源）
+    # 子章节结果列表：每个元素是带完整元信息的子Chunk
     sub_sections = []
     for idx, chunk in enumerate(splitter.split_text(body), start=1):
         # 清理空内容：跳过切分后的空字符串
         text = chunk.strip()
+        # 空片段直接丢弃，不生成空Chunk
         if not text:
             continue
         # 组装子Chunk完整内容：标题前缀 + 切分后的正文
         full_text = (prefix + text).strip()
         # 子章节元信息：保留父级关联，添加序号，便于后续检索/溯源
+        # 组装子Chunk字典：标题、内容、父标题、序号、源文件名缺一不可
         sub_sections.append({
             "title": f"{title}-{idx}" if title else f"chunk-{idx}",  # 子Chunk标题（带序号）
             "content": full_text,                                     # 切分后的完整内容
@@ -187,8 +212,10 @@ def _split_long_section(section: Dict[str, Any], max_length: int = DEFAULT_MAX_C
         })
 
     logger.debug(f"超长章节切分完成：{title} → 生成{len(sub_sections)}个子Chunk")
+    # 返回子章节列表（未超限时为仅含原章节的单元素列表）
     return sub_sections
 
+# 短章合并的实际执行者：仅在切分结果内部调用，遵循「同父标题才合并」的约束
 def _merge_short_sections(sections: List[Dict[str, Any]], min_length: int = MIN_CONTENT_LENGTH) -> List[Dict[str, Any]]:
     """
     【辅助函数】过短章节合并（减少碎片化，提升检索效果）
@@ -237,6 +264,7 @@ def _merge_short_sections(sections: List[Dict[str, Any]], min_length: int = MIN_
         merged_sections.append(current_chunk)
 
     logger.debug(f"短Chunk合并完成：原{len(sections)}个 → 合并后{len(merged_sections)}个")
+    # 返回合并后的Chunk列表，长度适中且保留元信息
     return merged_sections
 
 def step_4_refine_chunks(sections: List[Dict[str, Any]], max_len: int) -> List[Dict[str, Any]]:
@@ -253,6 +281,7 @@ def step_4_refine_chunks(sections: List[Dict[str, Any]], max_len: int) -> List[D
         return sections
 
     # 阶段1：切分超长章节 → 所有章节长度控制在max_len内
+    # 精细化后的子Chunk收集列表
     refined_split = []
     for sec in sections:
         # 对每个章节执行超长切分，结果平铺加入列表（避免嵌套）
@@ -267,6 +296,7 @@ def step_4_refine_chunks(sections: List[Dict[str, Any]], max_len: int) -> List[D
     # 阶段3：父标题兜底 → 适配Milvus向量库schema（parent_title为必填字段）
     # 兜底规则：无parent_title则用自身title，title也无则填空字符串
     for sec in final_sections:
+        # 非字典元素跳过，保证兜底逻辑的健壮性
         if not isinstance(sec, dict):
             continue
         
@@ -274,10 +304,12 @@ def step_4_refine_chunks(sections: List[Dict[str, Any]], max_len: int) -> List[D
         if "part" not in sec:
             sec["part"] = 0
             
+        # 无父标题时用自身标题兜底，两者皆无则置空字符串
         if not sec.get("parent_title"):
             sec["parent_title"] = sec.get("title") or ""
     logger.debug(f"步骤4-3：父标题兜底完成，所有Chunk均包含parent_title字段")
 
+    # 返回最终Chunk列表：长度适中、语义完整、元信息齐全
     return final_sections
 
 def step_5_print_stats(lines_count: int, sections: List[Dict[str, Any]]) -> None:
@@ -286,12 +318,15 @@ def step_5_print_stats(lines_count: int, sections: List[Dict[str, Any]]) -> None
     :param lines_count: MD原始文本总行数
     :param sections: 最终处理后的Chunk列表
     """
+    # 统计最终Chunk数量，用于日志输出
     chunk_num = len(sections)
     # 输出核心统计信息：原始行数/最终Chunk数/首个Chunk预览
     logger.info("-" * 50 + " 文档切分统计信息 " + "-" * 50)
     logger.info(f"MD原始文本总行数：{lines_count}")
     logger.info(f"最终生成Chunk数量：{chunk_num}")
+    # 有Chunk时输出首个标题预览，便于快速核对切分结果
     if sections:
+        # 取第一个Chunk的标题（无标题则显示"无标题"）
         first_title = sections[0].get("title", "无标题")
         logger.info(f"首个Chunk标题预览：{first_title}")
     logger.info("-" * 110)
@@ -321,6 +356,7 @@ def step_6_backup(state: ImportGraphState, sections: List[Dict[str, Any]]) -> No
             json.dump的核心作用就是：将 Python 原生数据结构（列表、字典、字符串、数字等）直接序列化并写入 JSON 文件，无需手动转换为字符串，
             同时保证数据格式规范、可跨语言 / 跨场景读取，完美适配「Chunk 列表备份」的需求。
             """
+            # json.dump 参数依次为：待序列化对象、目标文件句柄、ASCII转义开关、缩进格数
             json.dump(
                 sections,
                 f,
@@ -334,6 +370,8 @@ def step_6_backup(state: ImportGraphState, sections: List[Dict[str, Any]]) -> No
         # 备份失败仅记录日志，不终止主流程
         logger.error(f"步骤6：Chunk结果备份失败，错误信息：{str(e)}", exc_info=False)
 
+# 节点函数：被 main_graph 注册为 "node_document_split"，位于图片处理与商品名识别之间
+# 无论内部成败均返回状态字典（异常被捕获记录），保证流水线不至于整体崩溃
 def node_document_split(state: ImportGraphState) -> ImportGraphState:
     """
     【核心节点】文档切分主节点（node_document_split）
@@ -349,6 +387,7 @@ def node_document_split(state: ImportGraphState) -> ImportGraphState:
     # 将当前节点加入运行中任务，更新全局任务状态
     add_running_task(state["task_id"], node_name)
 
+    # 六个步骤串行执行；任一步骤抛出异常都会被下方 except 捕获记录
     try:
         # ===================================== 步骤1：加载并标准化输入数据 =====================================
         # 作用：从状态字典提取MD内容/文件标题/Chunk最大长度，统一换行符消除系统差异，做空值兜底
@@ -404,6 +443,7 @@ if __name__ == '__main__':
     """
 
     """本地测试入口：单独运行该文件时，执行MD图片处理全流程测试"""
+    # 测试依赖：项目根目录常量，用于拼接测试文件路径
     from app.utils.path_util import PROJECT_ROOT
 
     logger.info(f"本地测试 - 项目根目录：{PROJECT_ROOT}")
@@ -421,6 +461,8 @@ if __name__ == '__main__':
         logger.info("请检查文件路径，或手动将测试MD文件放入项目根目录的output目录下")
     else:
 
+        # 文件存在时才执行集成测试流程
+        # 读取测试MD文件全文，作为切分输入
         with open(md_file, "r", encoding="utf-8") as f:
             md_content = f.read()
         # 构造测试状态对象，模拟流程入参
@@ -438,6 +480,9 @@ if __name__ == '__main__':
         logger.info("\n=== 开始执行文档切分节点集成测试 ===")
 
         logger.info(">> 开始运行当前节点：node_document_split（文档切分）")
+        # 传入模拟状态，执行完整的六步切分流程
         final_state = node_document_split(test_state)
+        # 提取切分结果，用于验证Chunk数量与内容
         final_chunks = final_state.get("chunks", [])
+        # 输出最终Chunk列表，人工核对切分质量
         logger.info(f"✅ 测试成功：最终生成{len(final_chunks)}个有效Chunk{final_chunks}")

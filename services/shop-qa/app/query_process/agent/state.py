@@ -1,3 +1,18 @@
+"""LangGraph 问答流程的全局状态定义（整张图共享的「数据总线」）。
+
+QueryGraphState 是 TypedDict 描述的状态结构：每个节点接收它、处理后把
+各自负责的字段写回，LangGraph 按 key 合并更新，从而在节点之间传递
+检索、排序、生成各阶段的中间结果。
+
+字段按流程阶段分组：
+- 输入：session_id / original_query（is_stream 控制是否走 SSE 推流）；
+- 四路检索产物：embedding_chunks（普通向量）、hyde_embedding_chunks（HyDE
+  假设文档）、kg_chunks（知识图谱）、web_search_docs（联网搜索）；
+- 融合排序产物：rrf_chunks（RRF 候选融合）→ reranked_docs（BGE 精排 Top-K）；
+- 生成产物：prompt（组装好的提示词）→ answer（最终答案）；
+- 辅助字段：item_names（确认出的商品名）、rewritten_query（改写后问题）、
+  history（历史对话）供查询改写与上下文组织参考。
+"""
 from typing_extensions import TypedDict
 from typing import List
 

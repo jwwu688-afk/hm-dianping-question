@@ -1,3 +1,13 @@
+"""
+Prompt 模板加载工具：从项目根目录的 prompts/ 下读取 .prompt 纯文本模板，
+并用 str.format(**kwargs) 渲染其中的 {变量} 占位符。
+
+为什么把提示词抽成独立文本文件：提示词是 RAG 效果调优最频繁改动的部分，
+剥离出代码后可直接改模板文件，无需动代码、无需重新打包部署；
+同时 load_prompt(...) 是全项目统一的模板入口（HyDE 节点、商品名识别、图片摘要
+等都在用），占位符命名与调用方关键字参数严格一致，避免各处自行 open 文件
+导致的路径不统一、编码不一致问题。
+"""
 from pathlib import Path
 from app.utils.path_util import PROJECT_ROOT
 from app.core.logger import logger  # 可选，加日志更友好
@@ -9,6 +19,10 @@ def load_prompt(name: str, **kwargs) -> str:
     :param **kwargs: 需渲染的变量键值对（如root_folder="测试文件", image_content=("上文内容", "下文内容")）
     :return: 渲染后的最终提示词字符串
     """
+    # kwargs 用关键字可变参数收集：调用处 load_prompt("hyde_prompt", rewritten_query=xxx)
+    # 的参数名必须与模板文件中的 {rewritten_query} 占位符完全一致，否则 format 抛 KeyError
+    # 路径锚点：PROJECT_ROOT 由 path_util 统一推导（基于本文件绝对位置向上找 .env），
+    # 不依赖进程工作目录，IDE 直接跑脚本 / uvicorn 托管 / 容器部署均能定位到同一目录
     # 1. 拼接提示词路径（你的原有逻辑，完全保留）
     prompt_path = PROJECT_ROOT / 'prompts' / f'{name}.prompt'
 
@@ -20,6 +34,8 @@ def load_prompt(name: str, **kwargs) -> str:
     raw_prompt = prompt_path.read_text(encoding='utf-8')
 
     # 4. 核心：如果传了参数，渲染占位符；没传参，直接返回原文本
+    # 不传 kwargs 时跳过 format：模板中的字面量大括号（需写成 {{ }} 转义）不会被误处理，
+    # 纯静态模板也能走同一入口，调用方式保持统一
     if kwargs:
         rendered_prompt = raw_prompt.format(**kwargs)
         logger.debug(f"提示词渲染成功，替换变量：{list(kwargs.keys())}")
@@ -30,6 +46,7 @@ def load_prompt(name: str, **kwargs) -> str:
 
 if __name__ == '__main__':
     # 测试：传入参数渲染占位符（和业务代码中实际使用方式一致）
+    # 本地自测入口：验证「模板文件读取 + 占位符渲染」链路，输出应为替换后的完整提示词
     root_folder = "hl3070使用说明书"  # 要替换的文件名称
     image_content = ("这是图片的上文内容", "这是图片的下文内容")  # 要替换的上下文
     # 调用时传入所有需要渲染的变量（键名必须和.prompt中的占位符完全一致）

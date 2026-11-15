@@ -1,3 +1,13 @@
+"""商品名称（item_name）识别节点模块。
+
+item_name 是检索过滤的关键字段：切片入库后，问答侧通过 item_name 过滤
+同商品的切片，保证召回范围精准。本节点整体流程：
+1. 从切片中截取前几段构建大模型上下文；
+2. 调用 LLM 识别商品名并做归一化清洗（去空白字符）；
+3. 将 item_name 回填到状态与所有切片；
+4. 为 item_name 生成 BGE-M3 双向量并写入 Milvus 的商品名集合。
+识别失败时以 file_title 兜底，保证流水线不中断。
+"""
 # 导入基础库：系统、路径、类型注解（类型注解提升代码可读性和可维护性）
 import os
 import sys
@@ -28,6 +38,7 @@ from app.core.logger import logger
 # 8. 提示词工具：加载本地prompt模板，实现提示词与代码解耦
 from app.core.load_prompt import load_prompt
 
+# Milvus过滤表达式转义工具：防止商品名含引号等特殊字符导致表达式解析失败
 from app.utils.escape_milvus_string_utils import escape_milvus_string
 
 # --- 配置参数 (Configuration) ---
@@ -74,6 +85,7 @@ def step_1_get_inputs(state: ImportGraphState) -> Tuple[str, List[Dict]]:
         return file_title, []
 
     logger.info(f"步骤1：输入校验完成，获取到{len(chunks)}个有效文本切片")
+    # 返回兜底后的文件标题与有效切片列表
     return file_title, chunks
 
 
@@ -124,6 +136,7 @@ def step_2_build_context(chunks: List[Dict], k: int = DEFAULT_ITEM_NAME_CHUNK_K,
 
         # 结构化格式化切片：带序号+标题+内容，提升大模型识别效率
         piece = f"【切片{idx + 1}】\n标题：{chunk_title} \n内容：{chunk_content}"
+        # 加入片段列表，后续统一拼接
         parts.append(piece)
         # 累计字符数，包含分隔符
         total_chars += len(piece)
@@ -170,6 +183,7 @@ def step_3_call_llm(file_title: str, context: str) -> str:
         # 加载商品名称识别prompt模板，动态传入文件标题和上下文
         human_prompt = load_prompt("item_name_recognition", file_title=file_title, context=context)
         # 加载系统提示词，定义大模型角色（商品识别专家，仅返回纯结果）
+        # 加载系统提示词：限定大模型角色为商品识别专家，只输出纯名称
         system_prompt = load_prompt("product_recognition_system")
         logger.debug(f"大模型调用提示词构建完成，系统提示词长度{len(system_prompt)}，人类提示词长度{len(human_prompt)}")
 
@@ -181,8 +195,11 @@ def step_3_call_llm(file_title: str, context: str) -> str:
             return file_title
 
         # 标准化构建大模型对话消息：SystemMessage定义角色 + HumanMessage传递业务请求
+        # 组装消息列表：SystemMessage 定角色 + HumanMessage 传业务请求
         messages = [
+            # 系统消息：角色与输出格式约束
             SystemMessage(content=system_prompt),
+            # 用户消息：携带文件标题与切片上下文
             HumanMessage(content=human_prompt)
         ]
         # 调用大模型并获取返回结果
@@ -199,6 +216,7 @@ def step_3_call_llm(file_title: str, context: str) -> str:
             return file_title
 
         logger.info(f"步骤3：大模型识别商品名称成功，结果为：{item_name}")
+        # 返回归一化后的商品名称
         return item_name
 
     # 捕获所有异常：大模型调用超时、网络错误、格式错误等，均不中断主流程
@@ -225,6 +243,7 @@ def step_4_update_chunks(state: ImportGraphState, chunks: List[Dict], item_name:
     state["item_name"] = item_name
     # 遍历所有切片，为每个切片添加商品名字段，保证数据全链路一致
     for chunk in chunks:
+        # 每个切片绑定同一商品名：入库后按 item_name 过滤检索
         chunk["item_name"] = item_name
     # 同步更新state中的切片列表，确保修改全局生效
     state["chunks"] = chunks
@@ -268,8 +287,10 @@ def step_5_generate_vectors(item_name: str) -> Tuple[Any, Any]:
     # 捕获所有异常：模型加载失败、向量生成超时、格式错误等
     except Exception as e:
         logger.error(f"步骤5：向量生成失败，原因：{str(e)}", exc_info=True)
+        # 异常时双向量置空，调用方以None判断是否跳过入库
         dense_vector, sparse_vector = None, None
 
+    # 返回稠密向量与稀疏向量（失败时可能为None）
     return dense_vector, sparse_vector
 
 
@@ -291,7 +312,9 @@ def step_6_save_to_milvus(state: ImportGraphState, file_title: str, item_name: s
         sparse_vector: 步骤5生成的稀疏向量（字典格式）
     """
     # 从环境变量读取Milvus核心配置，与MilvusConfig配置类保持一致
+    # 读取Milvus连接地址（与切片集合共用同一实例）
     milvus_uri = os.environ.get("MILVUS_URL")
+    # 读取商品名专属集合名：与切片集合分离，便于独立管理
     collection_name = os.environ.get("ITEM_NAME_COLLECTION")
 
     # 配置缺失校验：任一配置为空则跳过Milvus存储，记录警告
@@ -376,7 +399,9 @@ def step_6_save_to_milvus(state: ImportGraphState, file_title: str, item_name: s
             logger.info(f"Milvus集合[{collection_name}]创建成功，包含Schema和向量索引")
 
         # 幂等性处理：删除同名商品数据，避免重复存储（核心：先加载集合才能删除）
+        # 归一化商品名：去除首尾空白后再用于幂等清理
         clean_item_name = (item_name or "").strip()
+        # 商品名非空才执行清理；先加载集合到内存才能执行删除
         if clean_item_name:
             client.load_collection(collection_name=collection_name)
             # 商品名称转义，防止特殊字符导致过滤表达式解析失败
@@ -387,6 +412,7 @@ def step_6_save_to_milvus(state: ImportGraphState, file_title: str, item_name: s
             logger.info(f"Milvus幂等性处理完成，已删除集合中[{clean_item_name}]的历史数据")
 
         # 构造插入Milvus的数据：基础字段+非空向量字段
+        # 构造插入数据：先放必填基础字段，向量字段按非空情况补充
         data = {
             "file_title": file_title,
             "item_name": item_name
@@ -464,6 +490,7 @@ def node_item_name_recognition(state: ImportGraphState) -> ImportGraphState:
         logger.info(f">>> 核心节点执行完成：【商品名称识别】{node_name}，识别结果：{item_name}，已存入Milvus")
 
     except Exception as e:
+        # 全局异常兜底：识别失败时写入占位名称，避免下游节点因缺字段报错
         # 全局异常捕获：保证节点执行失败不崩溃整个流程，记录详细错误日志便于排查
         logger.error(f">>> 核心节点执行失败：【商品名称识别】{node_name}，错误信息：{str(e)}", exc_info=True)
         # 可选：失败时设置默认值或标记状态
@@ -486,6 +513,7 @@ def test_node_item_name_recognition():
         直接运行该函数：if __name__ == "__main__": test_node_item_name_recognition()
     """
     logger.info("=== 开始执行商品名称识别节点本地测试 ===")
+    # 测试全程捕获异常：单节点调试失败不影响功能代码
     try:
         # 1. 构造模拟的ImportGraphState状态（模拟上游节点产出数据）
         mock_state = ImportGraphState({
@@ -516,16 +544,21 @@ def test_node_item_name_recognition():
         logger.info("=== 商品名称识别节点本地测试完成 ===")
         logger.info(f"测试任务ID：{result_state.get('task_id')}")
         logger.info(f"最终识别商品名称：{result_state.get('item_name')}")
+        # 输出切片数量与首个切片回填的商品名，验证回填逻辑
         logger.info(f"切片数量：{len(result_state.get('chunks', []))}")
         logger.info(f"第一个切片商品名称：{result_state.get('chunks', [{}])[0].get('item_name')}")
 
         # 4. 验证Milvus存储（可选）
+        # 仅当客户端与集合配置齐全时才执行
         milvus_client = get_milvus_client()
         collection_name = os.environ.get("ITEM_NAME_COLLECTION")
         if milvus_client and collection_name:
+            # 查询前先加载集合到内存
             milvus_client.load_collection(collection_name)
             # 检索测试结果
+            # 按识别出的商品名过滤
             item_name = result_state.get('item_name')
+            # 商品名转义后拼接过滤表达式，防止特殊字符破坏语法
             safe_name = escape_milvus_string(item_name)
             res = milvus_client.query(
                 collection_name=collection_name,
@@ -535,6 +568,7 @@ def test_node_item_name_recognition():
             logger.info(f"Milvus中检索到的数据：{res}")
 
     except Exception as e:
+        # 测试失败仅记录日志，不影响功能代码
         logger.error(f"商品名称识别节点本地测试失败，原因：{str(e)}", exc_info=True)
 
 

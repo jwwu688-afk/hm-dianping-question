@@ -1,3 +1,20 @@
+"""
+Embedding 混合检索节点：对改写后的用户问题做 BGE-M3 稠密+稀疏双路混合检索。
+
+检索策略与权重设计（为什么这么配）：
+1. 稠密向量（WeightedRanker 权重 0.8）：BGE-M3 的语义向量，擅长同义改写、
+   跨表述匹配，是「用户换个说法问同一个问题」仍能召回的根本保证；
+2. 稀疏向量（权重 0.2）：BGE-M3 内置的 learned sparse（类 BM25 词权重），
+   保留精确关键词（型号、错误码）的强匹配信号，补语义向量对生僻专有名词不敏感的短板。
+   0.8:0.2 的配比意味着语义为主、关键词为辅——客服问答多数是自然语言描述，
+   而非精确关键词命中；
+3. item_name 过滤表达式：知识库按商品名分块存储，检索前用 `item_name in [...]`
+   把召回范围收缩到已确认的商品，避免跨商品知识串台（A 商品手册内容混进 B 商品答案）。
+
+召回与返回的数量关系：稠密、稀疏各先召回 10 条（reqs.limit=10），
+归一化加权融合后只取 Top5 返回，多留候选给后续 Rerank 阶段精排。
+本节点与 HyDE 节点（node_search_embedding_hyde）是并行的两路召回，结果由 RRF 融合。
+"""
 import sys
 import os
 from app.utils.task_utils import add_running_task,add_done_task
@@ -5,6 +22,7 @@ from app.lm.embedding_utils import generate_embeddings
 from app.clients.milvus_utils import create_hybrid_search_requests,hybrid_search,get_milvus_client
 from app.core.logger import logger
 from dotenv import load_dotenv,find_dotenv
+# 环境变量在模块加载时立即生效：CHUNKS_COLLECTION 在函数体内读取，必须先于首次调用加载好
 load_dotenv(find_dotenv())
 
 
@@ -42,6 +60,7 @@ def node_search_embedding(state):
     
     dense_vec = embeddings.get("dense")[0]
     sparse_vec = embeddings.get("sparse")[0]
+    # generate_embeddings 返回批量结构（每条文本一个向量），这里单条查询故取下标 0
     # 打印稠密/稀疏向量日志，便于调试向量生成结果
     logger.debug(f"向量生成成功: dense_dim={len(dense_vec)}, sparse_len={len(sparse_vec)}")
 
@@ -55,6 +74,8 @@ def node_search_embedding(state):
     # 'item_name in ["苹果15", "华为P60"]'
 
     # 若无商品名，直接返回None（不做过滤）
+    # 商品名为空意味着上游没有确认到任何商品：全库检索必然跨商品串台，
+    # 因此宁可返回空结果，把问题交给上游的反问/拒答分支处理
     if not item_names:
         logger.warning("item_names 为空，跳过检索，返回空结果")
         return {"embedding_chunks": []}
@@ -78,6 +99,7 @@ def node_search_embedding(state):
 
     # 5. 执行Milvus稠密+稀疏混合向量检索（核心调用）
     logger.info("开始执行 Milvus 混合检索...")
+    # 客户端全局单例复用：避免每次检索都重新建立 gRPC 连接
     client = get_milvus_client()
     res = hybrid_search(
         client=client,
@@ -113,6 +135,7 @@ def node_search_embedding(state):
     """
 
     # 打印节点处理成功日志，输出原始检索结果，便于调试
+    # res 是批量搜索结构：即使只查一条，结果也包一层列表，故取 res[0]
     hit_count = len(res[0]) if res and len(res) > 0 else 0
     logger.info(f"节点 search_embedding 处理成功，检索到 {hit_count} 条相关片段")
     if hit_count > 0:
@@ -128,6 +151,7 @@ def node_search_embedding(state):
 
 if __name__ == "__main__":
     # 模拟测试数据
+    # 本地自测入口：无需完整 LangGraph 流程，直接构造 state 验证检索链路连通性
     test_state = {
         "session_id": "test_search_embedding_001",
         "rewritten_query": "HAK 180 烫金机使用说明",  # 模拟改写后的查询
@@ -148,6 +172,7 @@ if __name__ == "__main__":
             print("\n>>> Top 1 结果详情:")
             top1 = chunks[0]
             # 打印关键字段（注意：entity字段可能包含具体业务数据）
+            # Hit 的外层只有 id/distance 元信息，业务字段全部嵌在 entity 里
             print(f"ID: {top1.get('id')}")
             print(f"Distance: {top1.get('distance')}")
             entity = top1.get('entity', {})

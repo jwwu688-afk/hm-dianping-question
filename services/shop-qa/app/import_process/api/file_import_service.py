@@ -1,15 +1,29 @@
+"""文件导入 API 服务模块（file_import_service）。
+
+基于 FastAPI 提供文档导入流水线的 HTTP 入口，采用 202 式异步状态机设计：
+1. /upload 接口：接收多文件上传，落盘并转存 MinIO 后立即返回 task_ids，
+   实际的 LangGraph 解析流程由后台任务异步执行（接口不阻塞等待）；
+2. /status/{task_id} 接口：前端轮询查询任务全局状态（pending/processing/
+   completed/failed）与节点级进度（done_list/running_list）；
+3. 状态数据均保存在内存任务字典中（task_utils.py），读写无磁盘 IO。
+"""
+# 标准库：os（路径）、shutil（文件流拷贝）、uuid（任务ID生成）
 import os
 import shutil
 import uuid
 from typing import List, Dict, Any
+# 标准库：datetime（按日期分层组织输出目录与MinIO对象名）
 from datetime import datetime
+# ASGI服务器：直接运行本文件时启动HTTP服务
 import uvicorn
 # 第三方库
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 # 项目内部工具/配置/客户端
+# MinIO客户端工厂：上传原始文件做持久化备份
 from app.clients.minio_utils import get_minio_client
+# 项目根目录常量：定位前端页面与输出目录
 from app.utils.path_util import PROJECT_ROOT
 from app.utils.task_utils import (
     add_running_task,
@@ -19,6 +33,7 @@ from app.utils.task_utils import (
     update_task_status,
     get_task_status,
 )
+# 默认状态工厂：为每个后台任务生成独立的初始状态
 from app.import_process.agent.state import get_default_state
 from app.import_process.agent.main_graph import kb_import_app  # LangGraph全流程编译实例
 from app.core.logger import logger  # 项目统一日志工具
@@ -46,6 +61,7 @@ app.add_middleware(
 @app.get("/health", summary="健康检查")
 async def health():
     """返回服务存活状态，前端统一页面用它显示导入服务连接状态"""
+    # 固定返回ok=True：能响应即代表服务存活
     return {"ok": True}
 
 
@@ -56,13 +72,16 @@ async def health():
 @app.get("/", response_class=FileResponse)
 async def get_import_page():
     """返回文件导入前端页面：import.html"""
+    # 拼接前端页面的绝对路径
     html_abs_path = PROJECT_ROOT / "app/import_process/page/import.html"
     logger.info(f"前端页面访问，文件绝对路径：{html_abs_path}")
 
+    # 页面文件缺失时返回404，便于发现打包/部署遗漏
     if not os.path.exists(html_abs_path):
         logger.error(f"前端页面文件不存在，路径：{html_abs_path}")
         raise HTTPException(status_code=404, detail="import.html page not found")
 
+    # 以HTML类型返回文件内容，浏览器直接渲染页面
     return FileResponse(
         path=html_abs_path,
         media_type="text/html"
@@ -91,12 +110,16 @@ def run_graph_task(task_id: str, local_dir: str, local_file_path: str):
 
         # 2. 初始化LangGraph状态：加载默认状态 + 注入当前任务的核心参数
         init_state = get_default_state()
+        # 注入任务ID：节点内日志与任务登记都依赖它
         init_state["task_id"] = task_id  # 任务ID关联
+        # 注入任务独立目录：中间产物（转换结果/备份文件）均写入该目录
         init_state["local_dir"] = local_dir  # 任务本地目录
+        # 注入上传文件的本地路径：入口节点据此判断文件类型
         init_state["local_file_path"] = local_file_path  # 上传文件本地路径
 
         # 3. 流式执行LangGraph全流程（stream模式：实时获取每个节点的执行结果）
         for event in kb_import_app.stream(init_state):
+            # 每个event是「节点名 → 节点输出」的字典
             for node_name, node_result in event.items():
                 # 记录每个节点完成的日志，包含任务ID和节点名，方便追踪执行顺序
                 logger.info(f"[{task_id}] LangGraph节点执行完成：{node_name}")
@@ -110,6 +133,7 @@ def run_graph_task(task_id: str, local_dir: str, local_file_path: str):
     except Exception as e:
         # 5. 捕获全流程异常，更新任务全局状态为：失败，并记录错误日志（含堆栈）
         update_task_status(task_id, "failed")
+        # 失败状态同样可通过 /status 接口被前端轮询到
         logger.error(f"[{task_id}] LangGraph全流程执行失败，异常信息：{str(e)}", exc_info=True)
 
 
@@ -141,6 +165,7 @@ async def upload_files(background_tasks: BackgroundTasks, files: List[UploadFile
     for file in files:
         # 生成全局唯一TaskID（UUID4），作为单个文件的全流程标识
         task_id = str(uuid.uuid4())
+        # 登记到返回列表：一个文件对应一个TaskID
         task_ids.append(task_id)
         logger.info(f"[{task_id}] 开始处理上传文件，文件名：{file.filename}，文件类型：{file.content_type}")
 
@@ -149,20 +174,25 @@ async def upload_files(background_tasks: BackgroundTasks, files: List[UploadFile
 
         # 4. 构建该任务的本地独立目录：output/YYYYMMDD/TaskID，避免多文件重名冲突
         task_local_dir = os.path.join(date_based_root_dir, task_id)
+        # 目录不存在则创建，存在则不做处理
         os.makedirs(task_local_dir, exist_ok=True)  # 目录不存在则创建，存在则不做处理
         # 构建上传文件的本地保存绝对路径
         local_file_abs_path = os.path.join(task_local_dir, file.filename)
 
         # 5. 将上传的文件保存到本地临时目录（后续MinIO上传/文件解析均基于此文件）
         with open(local_file_abs_path, "wb") as file_buffer:
+            # 流式拷贝上传文件内容到本地文件
             shutil.copyfileobj(file.file, file_buffer)
         logger.info(f"[{task_id}] 文件已保存至本地，路径：{local_file_abs_path}")
 
         # 6. 将本地文件上传至MinIO对象存储，做持久化保存
         # 从环境变量获取MinIO的PDF存储目录配置
+        # 环境变量缺省时使用默认值 pdf_files
         minio_pdf_base_dir = os.getenv("MINIO_PDF_DIR", "pdf_files")  # 缺省值：pdf_files
         # 构建MinIO中的文件对象名：配置目录/YYYYMMDD/文件名（按日期分层，和本地一致）
+        # MinIO中的对象名：配置目录/YYYYMMDD/文件名（按日期分层，和本地一致）
         minio_object_name = f"{minio_pdf_base_dir}/{datetime.now().strftime('%Y%m%d')}/{file.filename}"
+        # MinIO上传环节独立捕获异常：失败不影响本地解析流程
         try:
             # 获取MinIO客户端实例
             minio_client = get_minio_client()
@@ -180,6 +210,7 @@ async def upload_files(background_tasks: BackgroundTasks, files: List[UploadFile
                 file_path=local_file_abs_path,
                 content_type=file.content_type  # 传递文件原始MIME类型
             )
+            # MinIO持久化完成：输出桶名与对象名便于核对
             logger.info(f"[{task_id}] 文件已成功上传至MinIO，桶名：{minio_bucket_name}，对象名：{minio_object_name}")
         except Exception as e:
             # MinIO上传失败，记录警告日志（不中断后续流程，本地文件仍可继续处理）
@@ -194,6 +225,7 @@ async def upload_files(background_tasks: BackgroundTasks, files: List[UploadFile
 
     # 9. 所有文件处理完毕，返回上传成功信息和所有TaskID（前端基于TaskID轮询进度）
     logger.info(f"多文件上传处理完毕，共处理{len(files)}个文件，生成TaskID列表：{task_ids}")
+    # 响应体：状态码/提示信息/任务ID列表
     return {
         "code": 200,
         "message": f"Files uploaded successfully, total: {len(files)}",
@@ -220,13 +252,16 @@ async def get_task_progress(task_id: str):
     task_status_info: Dict[str, Any] = {
         "code": 200,
         "task_id": task_id,
+        # status：任务全局状态机（pending → processing → completed/failed）
         "status": get_task_status(task_id),  # 任务全局状态：pending/processing/completed/failed
+        # done_list/running_list：节点级进度列表，前端据此渲染进度条
         "done_list": get_done_task_list(task_id),  # 已完成的节点/阶段列表
         "running_list": get_running_task_list(task_id)  # 正在运行的节点/阶段列表
     }
     # 记录状态查询日志，方便追踪前端轮询情况
     logger.info(
         f"[{task_id}] 任务状态查询，当前状态：{task_status_info['status']}，已完成节点：{task_status_info['done_list']}")
+    # 返回状态信息，前端按轮询间隔刷新
     return task_status_info
 
 

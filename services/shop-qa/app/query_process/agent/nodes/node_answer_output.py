@@ -8,7 +8,9 @@ from app.lm.lm_utils import get_llm_client, get_item_name_llm_client
 from app.clients.mongo_history_utils import save_chat_message
 import re
 
+# 图片占位标记：答案正文中图片链接统一替换为该标记，避免裸 URL 打断排版
 _IMAGE_BLOCK_MARKER = "【图片】"
+# Prompt 中证据片段的字符总额度：防止 reranked_docs 过多导致 Token 溢出
 MAX_CONTEXT_CHARS = 12000
 
 def step_1_check_answer(state) -> bool:
@@ -177,12 +179,15 @@ def step_3_generate_response(state: QueryGraphState, prompt: str) -> QueryGraphS
     # 非流式直接调用
     logger.info(f"模式: 非流式输出 (Blocking), Session: {session_id}")
     try:
+      # 非流式模式：一次性 invoke 整个 LLM，不推送中间增量
+      # 答案同时写回 state（供 LangGraph 下游/结果表）与任务结果表（供同步接口返回）
       response = llm.invoke(prompt)
       content = response.content
       state["answer"] = content
       set_task_result(session_id, "answer", content)
       logger.info(f"生成回答完成，长度: {len(content)}")
     except Exception as e:
+      # 生成失败时兜底一句固定话术，保证接口始终有 answer 字段可返回
       logger.error(f"生成回答出错: {e}", exc_info=True)
       state["answer"] = "抱歉，生成回答时出现错误。"
 
@@ -326,7 +331,15 @@ def node_answer_output(state: QueryGraphState) -> QueryGraphState:
   logger.info(f"---发送 final 事件---图片为：{image_urls}")
 
   # test_url = "http://www.baidu.com/img/bd_logo.png"
+  # 流式模式：推送 FINAL 帧（answer 全文 + completed 状态 + 图片列表）
+  # 前端收到 FINAL 后以整段覆盖增量渲染结果，并据此结束本次问答；
+  # 非流式模式的最终答案已在 step_1_check_answer 阶段写入任务结果表，
+  # 由 POST /query 的同步路径直接返回，这里无需再推 SSE
   if state.get("is_stream"):
+    # 流式模式：推送 FINAL 帧（answer 全文 + completed 状态 + 图片列表）
+    # 前端收到 FINAL 后以整段覆盖增量渲染结果，并据此结束本次问答；
+    # 非流式模式的最终答案已在 step_1_check_answer 阶段写入任务结果表，
+    # 由 POST /query 的同步路径直接返回，这里无需再推 SSE，也无需 FINAL 帧
     push_to_session(
         state['session_id'],
         SSEEvent.FINAL,
@@ -336,7 +349,6 @@ def node_answer_output(state: QueryGraphState) -> QueryGraphState:
             "image_urls": image_urls  # 发送图片URL给前端
         }
     )
-  
   logger.info("---node_answer_output 节点处理结束---")
   return state
 

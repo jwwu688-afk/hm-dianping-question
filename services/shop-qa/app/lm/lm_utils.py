@@ -1,3 +1,15 @@
+"""
+LLM 客户端统一封装：全项目获取大模型客户端的唯一入口。
+
+设计动机：
+1. 屏蔽供应商差异：OpenAI/通义千问/火山方舟等均提供 OpenAI 兼容 API，
+   用 LangChain 的 ChatOpenAI 一套协议即可通过 base_url+api_key 对接多家，
+   业务代码不感知供应商，换供应商只改配置不改代码；
+2. 客户端缓存：初始化 HTTP 客户端有开销且底层连接应复用，按 (model, json_mode, base_url)
+   做进程级缓存，同一配置永远拿到同一实例，避免连接泄漏；
+3. 多供应商混搭：商品名识别等关键链路可单独指定第二供应商（如百炼千问），
+   配置缺失时自动回退默认供应商，保证主流程永不因配置不全而中断。
+"""
 # 环境配置与依赖导入
 import os
 from dotenv import load_dotenv
@@ -11,6 +23,8 @@ from app.core.logger import logger
 
 # 全局缓存：键为(模型名, JSON输出模式)元组，值为ChatOpenAI实例
 # 作用：避免重复初始化客户端，提升性能，统一实例管理
+# 实现说明：Python dict 赋值是原子的，多线程同时 miss 也只是各自多建一次实例，
+# 后写的覆盖先写的，不会出错，故无需加锁
 _llm_client_cache = {}
 
 
@@ -31,6 +45,7 @@ def get_llm_client(model: Optional[str] = None, json_mode: bool = False,
     :raise Exception: 模型初始化失败（LangChain封装层异常）
     """
     # 1. 确定目标模型（优先级递减，保证模型名非空）
+    # 传参 > 配置 > 内置默认：调用方可以临时换模型做实验，不动全局配置
     target_model = model or lm_config.llm_model or "qwen3-32b"
     # 确定目标供应商地址与密钥（未指定则回落到默认供应商）
     target_base_url = base_url or lm_config.base_url
@@ -45,6 +60,7 @@ def get_llm_client(model: Optional[str] = None, json_mode: bool = False,
         return _llm_client_cache[cache_key]
 
     # 3. 核心配置校验：拦截缺失的API关键配置，提前抛出明确异常
+    # 放在初始化前而不是让它带着 None 走到 API 层报错：错误信息更贴近根因，排查成本低
     if not target_api_key:
         raise ValueError("[LLM客户端] 配置缺失：请在.env中配置OPENAI_API_KEY（大模型API密钥）")
     if not target_base_url:
@@ -53,6 +69,7 @@ def get_llm_client(model: Optional[str] = None, json_mode: bool = False,
 
     # 4. 配置参数组装：区分「国产模型私有参数」和「OpenAI通用参数」
     # extra_body：千问/即梦等国产模型专属私有参数（LangChain透传至API）
+    # enable_thinking=False：千问 3 系默认开思考链，结构化抽取场景下思考文本会混入 content 干扰 json.loads
     extra_body = {"enable_thinking": False}  # 千问专属：关闭思考链输出，减少冗余内容
     # model_kwargs：OpenAI通用参数，所有兼容API均支持
     model_kwargs = {}
@@ -62,6 +79,7 @@ def get_llm_client(model: Optional[str] = None, json_mode: bool = False,
         logger.debug(f"[LLM客户端] 已开启JSON输出模式，模型将返回标准JSON结构")
 
     # 5. 客户端初始化：捕获LangChain封装层异常，抛出更友好的提示
+    # temperature 用配置兜底 0.1：客服/信息抽取场景要求输出稳定，低温减少幻觉与随机格式
     try:
         llm_client = ChatOpenAI(
             model=target_model,  # 目标模型名
@@ -72,9 +90,12 @@ def get_llm_client(model: Optional[str] = None, json_mode: bool = False,
             model_kwargs=model_kwargs,  # OpenAI通用参数
         )
     except LangChainException as e:
+        # 只捕获 LangChain 层异常再包装：配置类错误(ValueError)应直接暴露，
+        # 与网络/SDK 类错误区分开，from e 保留原始异常链便于定位
         raise Exception(f"[LLM客户端] 模型【{target_model}】初始化失败（LangChain层）：{str(e)}") from e
 
     # 6. 新实例存入全局缓存，供后续调用复用
+    # 缓存发生在「成功初始化之后」：失败的创建不会污染缓存，下次调用会重试
     _llm_client_cache[cache_key] = llm_client
     logger.info(f"[LLM客户端] 实例初始化成功并缓存：模型={target_model}，JSON模式={json_mode}，地址={target_base_url}")
 
@@ -97,6 +118,7 @@ def get_item_name_llm_client(json_mode: bool = False) -> ChatOpenAI:
     base_url = lm_config.qwen_base_url
     api_key = lm_config.qwen_api_key
 
+    # 三件套齐全才切换供应商：任何一项缺失都回退，不尝试半配置（半配置必然鉴权失败）
     if model and base_url and api_key:
         logger.info(f"[item_name模型] 使用独立供应商（千问）：模型={model}，地址={base_url}")
         return get_llm_client(model=model, json_mode=json_mode, base_url=base_url, api_key=api_key)
@@ -110,6 +132,7 @@ def get_item_name_llm_client(json_mode: bool = False) -> ChatOpenAI:
 
 # 测试示例：验证客户端创建、缓存机制及日志输出
 if __name__ == "__main__":
+    # 直接运行本文件自测：覆盖默认配置、指定模型、缓存命中、JSON 模式四个场景
     logger.info("===== 开始执行LLM客户端工具测试 =====")
     try:
         # 测试1：默认配置（默认模型+普通模式）

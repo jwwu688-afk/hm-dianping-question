@@ -1,3 +1,13 @@
+"""Markdown 图片处理节点模块（node_md_img）。
+
+负责将 Markdown 中的本地图片转存为 MinIO 远程引用：
+1. 扫描 MD 同级 images 目录，筛选出 MD 中实际引用的支持格式图片；
+2. 调用多模态大模型为每张图片生成 50 字以内中文摘要；
+3. 图片批量上传 MinIO（先幂等清理旧目录），URL 路径改写进 MD 正文；
+4. 替换规则：![原描述](本地路径) → ![图片摘要](MinIO访问URL)；
+5. 处理结果另存为 *_new.md，原文件不动，路径回写状态供下游使用。
+"""
+# 标准库：os（路径/后缀）、re（图片引用正则）、sys（函数名）、base64（图片编码）
 import os
 import re
 import sys
@@ -41,11 +51,13 @@ def step_1_get_content(state: ImportGraphState) -> Tuple[str, Path, Path]:
     :return: 三元组(MD文件内容, MD文件路径对象, 图片文件夹路径对象)
     :raise FileNotFoundError: 当状态中无有效MD文件路径时抛出
     """
+    # 提取MD文件路径（入口节点或上游节点写入）
     md_file_path = state["md_path"]
     # 校验MD文件路径有效性
     if not md_file_path:
         raise FileNotFoundError(f"全局状态中无有效MD文件路径：{state['md_path']}")
 
+    # 转为Path对象，便于拼接图片目录等子路径
     path_obj = Path(md_file_path)
     # 优先使用状态中已存在的MD内容，无则从文件读取
     if not state["md_content"]:
@@ -58,6 +70,7 @@ def step_1_get_content(state: ImportGraphState) -> Tuple[str, Path, Path]:
 
     # 图片文件夹固定为MD文件同级的images目录
     images_dir = path_obj.parent / "images"
+    # 返回三元组：MD内容、MD路径对象、图片目录
     return md_content, path_obj, images_dir
 
 
@@ -77,19 +90,26 @@ def find_image_in_md(md_content: str, image_filename: str, context_len: int = 10
     :param context_len: 上下文截取长度，默认前后各100字符
     :return: 上下文列表，每个元素为(上文, 下文)元组，无匹配则返回空列表
     """
+    # 匹配MD图片语法：![任意描述](路径中包含该图片文件名)
     pattern = re.compile(r"!\[.*?\]\(.*?" + re.escape(image_filename) + r".*?\)")
+    # 命中位置的上下文收集列表
     results = []
 
     for m in pattern.finditer(md_content):
+        # 计算命中区间的起止下标
         start, end = m.span()
+        # 截取命中位置前文的上下文（最多context_len字符）
         pre_text = md_content[max(0, start - context_len):start]
+        # 截取命中位置后文的上下文（最多context_len字符）
         post_text = md_content[end:min(len(md_content), end + context_len)]
         # 打印图片上下文，便于调试
         logger.debug(f"图片[{image_filename}]匹配到引用，上文：{pre_text.strip()}")
         logger.debug(f"图片[{image_filename}]匹配到引用，下文：{post_text.strip()}")
+        # 保存(上文, 下文)元组，供摘要生成时提供语境
         results.append((pre_text, post_text))
     if not results:
         logger.debug(f"MD内容中未找到图片[{image_filename}]的引用")
+    # 返回所有命中位置的上下文列表
     return results
 
 # 步骤2：扫描图片文件夹，筛选MD中实际引用的支持格式图片
@@ -100,6 +120,7 @@ def step_2_scan_images(md_content: str, images_dir: Path) -> List[Tuple[str, str
     :param images_dir: 图片文件夹路径对象
     :return: 待处理图片列表，每个元素为(图片文件名, 图片完整路径, 图片上下文)元组
     """
+    # 待处理图片列表：元素为(文件名, 完整路径, 上下文)三元组
     targets = []
     # 遍历图片文件夹所有文件
     # 遍历图片文件夹所有文件
@@ -120,6 +141,7 @@ def step_2_scan_images(md_content: str, images_dir: Path) -> List[Tuple[str, str
         targets.append((image_file, img_path, context_list[0]))
         logger.info(f"图片加入待处理列表：{image_file}")
     logger.info(f"图片扫描完成，共筛选出待处理图片：{len(targets)} 张")
+    # 返回筛选后的待处理列表（未引用/不支持的图片已被过滤）
     return targets
 
 
@@ -129,9 +151,11 @@ def encode_image_to_base64(image_path: str) -> str:
     :param image_path: 图片本地完整路径
     :return: 图片的Base64编码字符串（UTF-8解码）
     """
+    # 二进制读取后编码，再解码为UTF-8字符串便于消息传输
     with open(image_path, "rb") as img_file:
         base64_str = base64.b64encode(img_file.read()).decode("utf-8")
     logger.debug(f"图片Base64编码完成，文件：{image_path}，编码后长度：{len(base64_str)}")
+    # 返回Base64编码字符串
     return base64_str
 
 def summarize_image(image_path: str, root_folder: str, image_content: Tuple[str, str]) -> str:
@@ -206,16 +230,21 @@ def step_3_generate_summaries(doc_stem: str, targets: List[Tuple[str, str, Tuple
     :param requests_per_minute: 每分钟最大API请求数，默认9次（按大模型限制调整）
     :return: 图片摘要字典，键：图片文件名，值：图片内容摘要
     """
+    # 摘要结果容器：图片文件名 → 摘要文本
     summaries = {}
+    # 最近请求时间戳队列：滑动窗口限速的数据结构
     request_times = deque()  # 外部初始化请求时间队列，跨循环复用
 
+    # 逐张图片：先限速再调用摘要生成，避免触发大模型API限流
     for img_file, image_path, context in targets:
         # 直接调用抽离的公共工具方法，参数和原逻辑完全一致
         apply_api_rate_limit(request_times, requests_per_minute, window_seconds=60)
         logger.debug(f"开始生成图片摘要：{image_path}")
+        # 调用多模态模型生成摘要并写入结果字典
         summaries[img_file] = summarize_image(image_path, root_folder=doc_stem, image_content=context)
 
     logger.info(f"图片摘要批量生成完成，共处理{len(summaries)}张图片")
+    # 返回摘要字典（失败图片的值为默认占位"图片描述"）
     return summaries
 
 
@@ -236,6 +265,7 @@ def clean_minio_directory(minio_client: Minio, prefix: str) -> None:
         # 构造删除对象列表
         delete_list = [DeleteObject(obj.object_name) for obj in objects_to_delete]
 
+        # 存在待删除对象才执行批量删除
         if delete_list:
             logger.info(f"开始清理MinIO旧文件，待删除文件数：{len(delete_list)}，目录：{prefix}")
             # 批量删除对象
@@ -246,6 +276,7 @@ def clean_minio_directory(minio_client: Minio, prefix: str) -> None:
         else:
             logger.debug(f"MinIO目录无旧文件，无需清理：{prefix}")
     except Exception as e:
+        # 清理失败仅告警：不阻断主流程（后续上传会覆盖同名对象）
         logger.error(f"MinIO目录清理失败：{prefix}，错误信息：{str(e)}")
 
 
@@ -258,7 +289,9 @@ def upload_images_batch(minio_client: Minio, upload_dir: str, targets: List[Tupl
     :param targets: 待处理图片列表，元素为(图片文件名, 图片完整路径, 图片上下文)
     :return: 图片URL字典，键：图片文件名，值：MinIO访问URL
     """
+    # 上传结果映射：图片文件名 → MinIO访问URL
     urls = {}
+    # 逐张上传，失败图片不会出现在结果中
     for img_file, img_path, _ in targets:
         # 构造MinIO对象名称
         object_name =  f"{upload_dir}/{img_file}"
@@ -268,6 +301,7 @@ def upload_images_batch(minio_client: Minio, upload_dir: str, targets: List[Tupl
         := 是 Python 3.8+ 引入的海象运算符（Walrus Operator），核心作用是 **「表达式内赋值 + 结果判断」一体化 **：
         在执行判断、循环等逻辑的同一个表达式中，完成变量赋值和赋值结果的使用 / 判断，替代传统「先赋值、后判断」的两行代码，让逻辑更简洁。
         """
+        # 海象运算符：上传成功（URL非空）才记录映射关系
         if img_url := upload_to_minio(minio_client, img_path, object_name):
             urls[img_file] = img_url
     logger.info(f"图片批量上传完成，成功上传{len(urls)}/{len(targets)}张图片")
@@ -311,8 +345,10 @@ def upload_to_minio(minio_client: Minio, local_path: str, object_name: str) -> s
         # 拼接完整图片访问URL base_url 后面带 / 中间直接两个字符串拼接即可
         img_url = f"{base_url}{object_name}"
         logger.info(f"图片上传成功，访问URL：{img_url}")
+        # 返回可公网访问的图片URL
         return img_url
     except Exception as e:
+        # 上传失败返回None：调用方据此过滤失败图片，不中断主流程
         logger.error(f"图片上传MinIO失败：{local_path}，错误信息：{str(e)}")
         return None
 
@@ -323,9 +359,11 @@ def merge_summary_and_url(summaries: Dict[str, str], urls: Dict[str, str]) -> Di
     :param urls: 图片URL字典，键：图片文件名，值：MinIO访问URL
     :return: 合并后的图片信息字典，键：图片文件名，值：(摘要, URL)元组
     """
+    # 合并结果容器：图片文件名 → (摘要, URL)元组
     image_info = {}
     # 遍历摘要字典，仅保留有对应URL的图片
     for image_file, summary in summaries.items():
+        # 海象运算符：URL存在才合并，上传失败的图片被过滤
         if url := urls.get(image_file):
             image_info[image_file] = (summary, url)
     logger.info(f"图片摘要与URL合并完成，有效图片信息{len(image_info)}条")
@@ -340,6 +378,7 @@ def process_md_file(md_content: str, image_info: Dict[str, Tuple[str, str]]) -> 
     :param image_info: 合并后的图片信息字典，键：图片文件名，值：(摘要, URL)
     :return: 替换后的新MD内容
     """
+    # 逐张图片执行替换：每张图片一个独立正则，避免误伤同名路径
     for img_filename, (summary, new_url) in image_info.items():
         # 正则匹配MD图片标签，忽略大小写，兼容不同路径写法
         # 正则规则：![任意描述](任意路径+图片文件名+任意后缀)
@@ -355,7 +394,9 @@ def process_md_file(md_content: str, image_info: Dict[str, Tuple[str, str]]) -> 
         logger.debug(f"完成MD图片引用替换：{img_filename} → {new_url}")
 
     logger.info(f"MD文件图片引用替换完成，共替换{len(image_info)}处图片引用")
+    # 内容过长时仅输出前500字符日志，避免刷屏
     logger.debug(f"替换后MD内容：{md_content[:500]}..." if len(md_content) > 500 else f"替换后MD内容：{md_content}")
+    # 返回路径改写后的新MD内容
     return md_content
 
 def step_4_upload_and_replace(minio_client: Minio, doc_stem: str, targets: List[Tuple[str, str, Tuple[str, str]]],
@@ -371,7 +412,9 @@ def step_4_upload_and_replace(minio_client: Minio, doc_stem: str, targets: List[
     :return: 图片引用替换后的新MD内容
     """
     # 构造MinIO上传目录：配置根目录 + 文档主名（去除空格，避免路径问题）
+    # 读取配置中的图片根目录
     minio_img_dir = minio_config.minio_img_dir
+    # 上传目录：根目录 + 文档主名（去空格），实现按文档隔离
     upload_dir = f"{minio_img_dir}/{doc_stem}".replace(" ", "")
 
     # 步骤1：清理该文档对应的MinIO旧目录，保证幂等性
@@ -382,9 +425,11 @@ def step_4_upload_and_replace(minio_client: Minio, doc_stem: str, targets: List[
     # Dict[str, Tuple[str, str]]  键：图片文件名，值：(摘要, URL)元组
     image_info = merge_summary_and_url(summaries, urls)
     # 步骤4：替换MD内容中的本地图片引用为MinIO远程引用
+    # 存在有效图片信息才执行替换（全部上传失败时保持原文）
     if image_info:
         md_content = process_md_file(md_content, image_info)
 
+    # 返回改写后的MD内容
     return md_content
 
 
@@ -401,9 +446,11 @@ def step_5_backup_new_md_file(origin_md_path: str, md_content: str) -> str:
 
     # 写入新MD内容（覆盖写入，若文件已存在则更新）
     with open(new_md_file_name, "w", encoding="utf-8") as f:
+        # 写入改写后的完整MD内容
         f.write(md_content)
 
     logger.info(f"处理后MD文件已保存，新文件路径：{new_md_file_name}")
+    # 返回新文件路径，供状态更新与下游节点读取
     return new_md_file_name
 
 
@@ -424,22 +471,26 @@ def node_md_img(state: ImportGraphState) -> ImportGraphState:
 
     # 步骤1：初始化数据，获取MD核心信息
     md_content, path_obj, images_dir = step_1_get_content(state)
+    # 将MD内容写入状态，供后续步骤与下游节点复用
     state["md_content"] = md_content
 
     # 无图片文件夹，直接跳过所有图片处理逻辑
     if not images_dir.exists():
         logger.info(f"图片文件夹不存在，跳过图片处理：{images_dir.absolute()}")
+        # 原样返回状态：纯文本MD无需图片处理
         return state
 
     # 初始化MinIO客户端，失败则终止流程
     minio_client = get_minio_client()
     if not minio_client:
         logger.warning("MinIO客户端初始化失败，已跳过图片处理全流程")
+        # 对象存储不可用时降级返回：本地图片路径保持原样
         return state
     
     # 步骤2：扫描并筛选MD中引用的支持格式图片
     # (image_file, img_path, context_list[0])
     targets = step_2_scan_images(md_content, images_dir)
+    # 无待处理图片时提前返回，避免无意义的模型调用
     if not targets:
         logger.info("未检测到MD中引用的支持格式图片，跳过后续处理")
         return state
@@ -449,17 +500,21 @@ def node_md_img(state: ImportGraphState) -> ImportGraphState:
 
     # 步骤4：上传图片至MinIO，替换MD图片路径并填充摘要
     new_md_content = step_4_upload_and_replace(minio_client, path_obj.stem, targets, summaries, md_content)
+    # 更新状态中的MD内容：图片引用已改为MinIO URL
     state["md_content"] = new_md_content
 
     # 步骤5：备份并保存新MD文件，更新状态中的文件路径
     new_md_file_name = step_5_backup_new_md_file(state['md_path'], new_md_content)
+    # 路径切换到 _new.md：下游切分节点读取的是处理后的文件
     state["md_path"] = new_md_file_name
     logger.info(f"MD图片处理完成，新文件已保存：{new_md_file_name}")
 
+    # 返回更新后的状态，交由下一节点继续处理
     return state
 
 if __name__ == "__main__":
     """本地测试入口：单独运行该文件时，执行MD图片处理全流程测试"""
+    # 测试依赖：项目根目录常量
     from app.utils.path_util import PROJECT_ROOT
     logger.info(f"本地测试 - 项目根目录：{PROJECT_ROOT}")
 
@@ -481,4 +536,5 @@ if __name__ == "__main__":
         logger.info("开始本地测试 - MD图片处理全流程")
         # 执行核心处理流程
         result_state = node_md_img(test_state)
+        # 输出最终状态：核对md_content改写与md_path切换是否生效
         logger.info(f"本地测试完成 - 处理结果状态：{result_state}")

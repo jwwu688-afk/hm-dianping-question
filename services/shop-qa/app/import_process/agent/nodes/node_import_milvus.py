@@ -1,3 +1,12 @@
+"""Milvus 向量入库节点模块（node_import_milvus）。
+
+将上游 BGE-M3 向量化节点产出的切片（含稠密/稀疏双向量）批量写入 Milvus 集合：
+1. Schema 建表：chunk_id 自增主键；稠密向量 HNSW+COSINE；稀疏向量倒排索引+IP；
+2. 幂等清理：插入前删除同 item_name 的旧数据，多次导入只保留最新一份；
+3. 批量插入与 chunk_id 回填：Milvus 自增主键按插入顺序回填到每个切片。
+item_name 是检索过滤的关键字段，入库前必须保证切片中已回填该字段。
+"""
+# 标准库：os（环境变量）、sys（动态获取函数名）、类型注解
 import os
 import sys
 from typing import List, Dict, Any
@@ -61,7 +70,9 @@ def node_import_milvus(state: Dict[str, Any]) -> Dict[str, Any]:
 
         logger.info("--- Milvus切片数据入库流程完成 ---")
     except Exception as e:
+        # 记录完整堆栈便于排查入库失败原因
         logger.error(f"Milvus切片数据入库节点执行失败：{str(e)}", exc_info=True)
+        # 统一包装为ValueError上抛：让 LangGraph 感知节点失败，避免脏数据静默
         raise ValueError(f"Milvus 导入过程中发生错误: {e}")
 
     return state
@@ -85,23 +96,28 @@ def step_1_check_input(state: Dict[str, Any]) -> tuple[List[Dict[str, Any]], int
     # 校验1：chunks非空
     if not chunks_json_data:
         logger.error("Milvus入库校验失败：state中chunks字段为空")
+        # 空数据直接拒绝入库，抛出异常终止节点
         raise ValueError("错误: chunks为空，无法执行Milvus入库")
     # 校验2：chunks为非空列表
     if not isinstance(chunks_json_data, list) or len(chunks_json_data) == 0:
         logger.error("Milvus入库校验失败：chunks非列表类型或为空列表")
+        # 类型错误同样拒绝入库，保证下游插入逻辑输入合法
         raise ValueError("错误: chunks数据格式不正确，必须为非空列表")
     # 校验3：切片包含dense_vector字段（向量化节点核心产出）
     first_chunk = chunks_json_data[0]
     if 'dense_vector' not in first_chunk:
         logger.error("Milvus入库校验失败：切片缺失dense_vector字段，上游向量化节点可能执行失败")
+        # 缺向量字段的数据写入后无法检索，必须终止并提示检查上游节点
         raise ValueError("错误: 数据中缺失dense_vector字段，请检查上游向量化节点执行状态")
 
     # 提取向量维度和商品名称，用于后续集合创建/日志展示
     vector_dimension = len(first_chunk['dense_vector'])
     item_name = first_chunk.get('item_name', '未知商品名')
+    # 校验全部通过：输出入库规模概要日志
     logger.info(
         f"Milvus入库校验通过，待入库切片数：{len(chunks_json_data)} | 向量维度：{vector_dimension} | 商品名称：{item_name}")
 
+    # 返回校验通过的切片列表与向量维度，供后续步骤使用
     return chunks_json_data, vector_dimension
 
 
@@ -120,7 +136,9 @@ def create_collection(client, collection_name: str, vector_dimension: int):
     schema = client.create_schema(auto_id=True, enable_dynamic_fields=True)
 
     # 2. 新增字段：业务字段+主键+双向量字段，字段类型/长度适配业务场景
+    # 主键chunk_id：INT64自增，由Milvus自动生成并在插入后回填到切片
     schema.add_field(field_name="chunk_id", datatype=DataType.INT64, is_primary=True, auto_id=True)
+    # 业务文本字段：切片正文/标题/父标题/源文件名/商品名（均为VARCHAR，65535上限）
     schema.add_field(field_name="content", datatype=DataType.VARCHAR, max_length=65535)  # 切片内容
     schema.add_field(field_name="title", datatype=DataType.VARCHAR, max_length=65535)  # 切片标题
     schema.add_field(field_name="parent_title", datatype=DataType.VARCHAR, max_length=65535)  # 父标题
@@ -165,6 +183,7 @@ def create_collection(client, collection_name: str, vector_dimension: int):
 
     # 4. 创建集合：Schema+索引参数结合，一次性完成初始化
     client.create_collection(collection_name=collection_name, schema=schema, index_params=index_params)
+    # 建表成功日志：输出集合名与向量维度，便于确认环境一致性
     logger.info(f"Milvus集合创建成功：{collection_name}，向量维度：{vector_dimension}")
 
 
@@ -184,21 +203,25 @@ def step_2_prepare_collection(vector_dimension: int):
     logger.info(f"开始准备Milvus环境，目标集合：{CHUNKS_COLLECTION_NAME}")
     # 1. 获取Milvus单例客户端，验证连接
     client = get_milvus_client()
+    # 客户端为空说明连接失败，入库无法继续，直接抛出异常
     if client is None:
         logger.error("Milvus客户端获取失败：get_milvus_client()返回空，连接可能异常")
         raise ValueError("Milvus 连接失败：get_milvus_client() 返回空")
     # 2. 验证集合名称配置
     if not CHUNKS_COLLECTION_NAME:
         logger.error("Milvus集合名称未配置：CHUNKS_COLLECTION_NAME为空")
+        # 集合名缺失会导致数据写入未知位置，必须终止
         raise ValueError("未配置CHUNKS_COLLECTION集合名称")
 
     # 3. 集合不存在则自动创建
     if not client.has_collection(collection_name=CHUNKS_COLLECTION_NAME):
         logger.info(f"Milvus集合{CHUNKS_COLLECTION_NAME}不存在，开始自动创建Schema和索引")
+        # 首次运行自动建表：Schema与索引参数由 create_collection 统一维护
         create_collection(client, CHUNKS_COLLECTION_NAME, vector_dimension)
     else:
         logger.info(f"Milvus集合{CHUNKS_COLLECTION_NAME}已存在，直接复用")
 
+    # 返回准备就绪的客户端实例，供幂等清理与批量插入使用
     return client
 
 
@@ -225,6 +248,7 @@ def step_3_clean_old_data(client, chunks_json_data: List[Dict[str, Any]]):
     # 无有效item_name则跳过清理
     if not item_names:
         logger.warning("Milvus幂等性清理跳过：切片中无有效item_name")
+        # 无可清理目标，直接返回不执行删除
         return
     # 多item_name提示日志
     if len(item_names) > 1:
@@ -247,9 +271,11 @@ def _clear_chunks_by_item_name(client, collection_name: str, item_name: str):
     """
     # 预处理：去除空格，空值直接返回
     i_name = (item_name or "").strip()
+    # 空商品名无清理意义，直接返回
     if not i_name:
         logger.warning("Milvus单商品清理跳过：item_name为空")
         return
+    # 集合名缺失时无法定位删除目标，直接返回
     if not collection_name:
         logger.warning("Milvus单商品清理跳过：集合名称未配置")
         return
@@ -271,12 +297,14 @@ def _clear_chunks_by_item_name(client, collection_name: str, item_name: str):
         # 3. 强制flush，确保删除操作立即生效（避免Milvus异步延迟）
         if hasattr(client, "flush"):
             try:
+                # flush失败不影响主流程：删除最终会随Milvus内部刷盘生效
                 client.flush(collection_name=collection_name)
             except Exception as e:
                 logger.warning(f"Milvus幂等性清理：flush操作失败，不影响主流程 | 错误：{str(e)}")
 
         logger.info(f"Milvus幂等性清理完成：成功删除item_name={i_name}的旧数据")
     except Exception as e:
+        # 清理失败必须终止流程：否则旧数据残留会破坏幂等性
         logger.error(f"Milvus幂等性清理失败：item_name={i_name} | 错误：{str(e)}", exc_info=True)
         raise ValueError(f"幂等清理失败（item_name={i_name}）: {e}")
 
@@ -294,9 +322,12 @@ def step_4_insert_data(client, chunks_json_data: List[Dict[str, Any]]) -> List[D
         List[Dict[str, Any]] - 回填了chunk_id的切片列表
     """
     # 1. 预处理数据：移除手动chunk_id，避免与Milvus自增主键冲突
+    # 预处理后的待插入数据列表
     data_to_insert = []
     for item in chunks_json_data:
+        # 浅拷贝切片，避免修改影响上游状态中的原对象
         item_copy = item.copy()
+        # 剔除手动chunk_id：auto_id=True时由Milvus自动生成，手动值会引发主键冲突
         if isinstance(item_copy, dict) and "chunk_id" in item_copy:
             item_copy.pop("chunk_id", None)
         data_to_insert.append(item_copy)
@@ -304,19 +335,25 @@ def step_4_insert_data(client, chunks_json_data: List[Dict[str, Any]]) -> List[D
     logger.info(f"Milvus数据插入：准备{len(data_to_insert)}条切片数据，开始批量插入")
     # 2. 执行批量插入
     insert_result = client.insert(collection_name=CHUNKS_COLLECTION_NAME, data=data_to_insert)
+    # 从插入结果中提取成功条数，用于日志与结果核对
     insert_count = insert_result.get('insert_count', 0)
     logger.info(f"Milvus数据插入完成：成功插入{insert_count}条数据，插入结果：{insert_result}")
 
     # 3. 主键回填：将Milvus生成的chunk_id回填到原始切片
+    # 提取Milvus生成的自增主键列表（顺序与插入顺序一致）
     inserted_ids = insert_result.get('ids', [])
+    # 数量一致才能一一对应回填；不一致说明部分插入失败，跳过回填并告警
     if inserted_ids and len(inserted_ids) == len(chunks_json_data):
         logger.info(f"Milvus主键回填：开始将{len(inserted_ids)}个自增chunk_id回填到切片")
+        # 按下标一一对应，将自增主键写入切片（转为字符串便于业务使用）
         for idx, item in enumerate(chunks_json_data):
             item['chunk_id'] = str(inserted_ids[idx])
         logger.info("Milvus主键回填完成：所有切片已绑定chunk_id")
     else:
+        # ID数量与切片数量不一致：跳过回填，避免错误绑定
         logger.warning(f"Milvus主键回填失败：生成ID数量({len(inserted_ids)})与切片数量({len(chunks_json_data)})不一致")
 
+    # 返回回填了chunk_id的切片列表（就地更新原对象）
     return chunks_json_data
 
 
@@ -329,10 +366,12 @@ if __name__ == '__main__':
 
     # 加载环境变量 (自动寻找项目根目录的 .env)
     current_dir = os.path.dirname(os.path.abspath(__file__))
+    # 测试文件位于 nodes/ 子目录，向上两级即项目根目录
     project_root = os.path.dirname(os.path.dirname(current_dir))
     load_dotenv(os.path.join(project_root, ".env"))
 
     # 构造测试数据
+    # 测试用向量维度：与BGE-M3固定输出维度保持一致
     dim = 1024
     test_state = {
         "task_id": "test_milvus_task",
@@ -351,6 +390,7 @@ if __name__ == '__main__':
     }
 
     print("正在执行 Milvus 导入节点测试...")
+    # 捕获测试全流程异常，输出失败原因
     try:
         # 检查必要的环境变量
         if not os.getenv("MILVUS_URL"):
@@ -362,6 +402,7 @@ if __name__ == '__main__':
             result_state = node_import_milvus(test_state)
 
             # 验证结果
+            # 首个切片必须拿到Milvus回填的自增主键
             chunks = result_state.get("chunks", [])
             if chunks and chunks[0].get("chunk_id"):
                 print(f"✅ Milvus 导入测试通过，生成 ID: {chunks[0]['chunk_id']}")

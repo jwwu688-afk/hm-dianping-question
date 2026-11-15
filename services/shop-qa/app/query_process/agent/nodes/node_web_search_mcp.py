@@ -1,3 +1,20 @@
+"""
+联网搜索 MCP 兜底节点：本地知识库（Milvus）检索之外的第二信息来源。
+
+为什么需要联网兜底：本地知识库只覆盖已导入的官方手册/FAQ，用户问题一旦涉及
+新品、动态资讯或手册未写的细节，本地两路（Embedding/HyDE）检索都会空手而归；
+该节点调用百炼 MCP 的 WebSearch 工具联网检索，返回的摘要结果与本地结果
+一起进入后续 Rerank 节点统一重排——兜底内容与本地内容同台竞争，
+而不是无条件追加，保证最终答案始终按相关性取材。
+
+实现要点：
+1. LangGraph 节点是同步函数，而 MCP SDK 的 search_web 是协程，
+   这里用 asyncio.run() 做同步-异步桥接（每次调用独立事件循环，简单且无跨循环副作用）；
+2. MCP 返回 CallToolResult，content[0].text 是一段 JSON 字符串，
+   需二次解析为 {title, url, snippet} 扁平字典才能被 Rerank 阶段消费；
+3. 搜索失败/为空时不抛异常，返回空 dict 让流程继续——联网只是兜底，
+   不能因它挂掉而阻断问答主链路。
+"""
 import sys
 import json
 import asyncio
@@ -17,6 +34,8 @@ async def mcp_call(query):
     :param query: 搜索查询词（通常是经过改写后的精准 Query）
     :return: MCP 返回的原始 CallToolResult (含 content、is_error 字段)，失败时返回 None
     """
+    # 单独包一层而不是直接用 search_web：隔离 MCP 客户端模块，
+    # 未来更换搜索供应商时只需改这一处
     return await search_web(query)
 
 
@@ -41,11 +60,13 @@ def node_web_search_mcp(state):
         query = state.get("original_query", "")
 
     docs = []
+    # 结果累积到局部 docs：无论中途是否异常，最终统一在函数尾部决定是否写入 state
 
     # 3. 执行搜索
     if query:
         try:
             # 同步-异步桥接：通过asyncio.run()执行异步的mcp_call函数
+            # LangGraph 节点运行在同步上下文，asyncio.run 会新建事件循环并阻塞至协程完成
             logger.info(f"启动异步 MCP 调用，Query: {query}")
 
             # ======================================================================
@@ -79,10 +100,13 @@ def node_web_search_mcp(state):
                 try:
                     data = json.loads(raw_text)
                     pages = data.get("pages") or []
+                    # or [] 兜底：MCP 返回结构中 pages 缺失时按空结果处理，不抛 AttributeError
 
                     logger.info(f"MCP 返回原始页面数量: {len(pages)}")
 
                     # 遍历结果，统一封装为结构化格式
+                    # 逐页清洗：strip 去首尾空白、过滤无摘要项，
+                    # 保证下游 Rerank 拿到的每条都有可用于打分的文本
                     for item in pages:
                         snippet = (item.get("snippet") or "").strip()
                         url = (item.get("url") or "").strip()
@@ -95,8 +119,11 @@ def node_web_search_mcp(state):
                         docs.append({"title": title, "url": url, "snippet": snippet})
 
                 except json.JSONDecodeError:
+                    # JSON 解析失败只记录日志不中断：联网兜底是可选信息源，
+                    # 单次解析失败不该拖垮整个问答链路（上游本地检索结果仍然可用）
                     logger.error(f"MCP 返回结果解析 JSON 失败: {raw_text[:100]}...")
             else:
+                # 区分两类失败：服务端明确报错 vs 返回为空，日志口径不同便于排查
                 if result and is_error_result(result):
                     logger.error(f"MCP 返回错误: {result}")
                 else:
@@ -105,6 +132,8 @@ def node_web_search_mcp(state):
             logger.info(f"结构化搜索结果数量: {len(docs)}")
 
         except Exception as e:
+            # 兜底节点的总异常闸门：MCP 连接超时、SDK 异常等都在这里吃掉，
+            # 绝不让联网失败炸穿 LangGraph 主图
             logger.error(f"MCP 搜索节点执行异常: {e}", exc_info=True)
     else:
         logger.warning("查询词为空，跳过 MCP 搜索")
@@ -115,6 +144,8 @@ def node_web_search_mcp(state):
     logger.info("---node_web_search_mcp 处理结束---")
 
     # 若有有效搜索结果，返回结果供后续节点使用；无则返回空字典
+    # 返回空 dict 而非 {"web_search_docs": []}：LangGraph 对空 dict 不做状态覆盖，
+    # 避免空列表冲掉上游可能存在的同名数据
     if docs:
         return {"web_search_docs": docs}
     return {}
@@ -122,6 +153,7 @@ def node_web_search_mcp(state):
 
 if __name__ == '__main__':
     # 测试代码：单独运行该文件时，验证MCP搜索功能是否正常
+    # 依赖真实 MCP 连接：运行前需确认百炼 API Key 已配置、网络可达
     print("\n" + "="*50)
     print(">>> 启动 node_web_search_mcp 本地测试")
     print("="*50)
